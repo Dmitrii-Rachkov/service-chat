@@ -8,10 +8,11 @@ import (
 )
 
 func main() {
-	// Устанавливаем переменные окружения
+	// Получаем конфиг из файла local.yaml
 	cfg := config.MustSetEnv()
 	fmt.Println(cfg)
 
+	// Тестовый handler
 	http.HandleFunc("/docker", func(writer http.ResponseWriter, request *http.Request) {
 		fprintf, err := fmt.Fprintf(writer, "<h1>Hello from Docker container!</h1>")
 		if err != nil {
