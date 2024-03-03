@@ -4,7 +4,11 @@ env: "local"
 # Конфиг для база данных
 database:
   host: localhost
-  port: 5432
+  port: 5436
+  username: postgres
+  password: qwerty
+  name: db_chat
+  connections: 10
 
 # Конфиг для сервера
 server:
@@ -16,4 +20,3 @@ server:
   # удобно, когда от одного клиента несколько запросов и между ними немного времени прошло
   # открываем соединение на 60s для одного клиента и он может присылать несколько запросов
   idleTimeout: 60s
-  connections: 10

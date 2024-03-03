@@ -1,6 +1,7 @@
 package config
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -8,33 +9,29 @@ import (
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	_ "github.com/lib/pq"
 )
 
 // Config - структура конфига из файла ./config/local.yaml
 type Config struct {
 	// Тег yaml:"env" определяет какое имя будет у параметра Env в yaml файле если мы оттуда будем считывать данные
 	// env-default:"local" - окружение по умолчанию
-	// env-description:"Environment" - мы можем получать при необходимости описание параметра
-	// env:"DB_USER" - будем получать из переменных окружения, т.к. задали его в compose.yaml
-	// env:"DB_PASSWORD" - пароль задан в файле password.txt и путь до него прописан в compose.yaml
-	// env:"DB_NAME" - также прописан в compose.yaml
 	// yaml:"connections" - кол-во одновременных подключений к базе данных задано в local.yaml
 	Env      string `yaml:"env" env-default:"local" env-description:"Environment"`
 	Database struct {
-		Host        string `yaml:"host" env-description:"Database host"`
-		Port        string `yaml:"port" env-description:"Database port"`
-		Username    string `env:"DB_USER" env-description:"Database user name"`
-		Password    string `env:"DB_PASSWORD" env-description:"Database user password"`
-		Name        string `env:"DB_NAME" env-description:"Database name"`
-		Connections int    `yaml:"connections" env-description:"Total number of database connections"`
+		Host        string `yaml:"host"`
+		Port        string `yaml:"port"`
+		Username    string `yaml:"username"`
+		Password    string `yaml:"password"`
+		Name        string `yaml:"name"`
+		Connections int    `yaml:"connections"`
 	} `yaml:"database"`
 	Server struct {
-		Host        string        `yaml:"host" env-description:"Server host" env-default:"localhost"`
+		Host        string        `yaml:"host" env-default:"localhost"`
 		Port        string        `yaml:"port"`
 		Timeout     time.Duration `yaml:"timeout" env-default:"5s"`
 		IdleTimeout time.Duration `yaml:"idleTimeout" env-default:"60s"`
 	} `yaml:"server"`
-	Greeting string `env:"GREETING" env-description:"Greeting phrase" env-default:"Hello!"`
 }
 
 // MustSetEnv - функция, которая прочитает файл с конфигом и создаст и заполнит объект Config
@@ -55,4 +52,16 @@ func MustSetEnv() *Config {
 	}
 
 	return &cfg
+}
+
+// ConnectDB - соединение с базой данных postgres
+func ConnectDB(host, port, user, password, name string, conn int) (*sql.DB, error) {
+	db, err := sql.Open("postgres",
+		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+			host, port, user, password, name))
+	if err != nil {
+		return nil, err
+	}
+	db.SetMaxOpenConns(conn)
+	return db, nil
 }

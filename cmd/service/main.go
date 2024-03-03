@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-
 	"service-chat/internal/config"
 )
 
@@ -11,6 +10,20 @@ func main() {
 	// Получаем конфиг из файла local.yaml
 	cfg := config.MustSetEnv()
 	fmt.Println(cfg)
+
+	//// connect to the DB (example)
+	//db, err := config.ConnectDB(cfg.Database.Host, cfg.Database.Port, cfg.Database.Username,
+	//	cfg.Database.Password, cfg.Database.Name, cfg.Database.Connections)
+	//_ = db
+	//if err != nil {
+	//	fmt.Println("fail connect to db")
+	//}
+	//
+	//http.HandleFunc("/db", func(w http.ResponseWriter, r *http.Request) {
+	//	fmt.Fprintf(w, "<h1>%s</h1>", cfg.Greeting)
+	//})
+	//
+	//http.ListenAndServe(":"+cfg.Server.Port, nil)
 
 	// Тестовый handler
 	http.HandleFunc("/docker", func(writer http.ResponseWriter, request *http.Request) {
@@ -21,15 +34,10 @@ func main() {
 		_ = fprintf
 	})
 
-	err := http.ListenAndServe(":9000", nil)
+	err := http.ListenAndServe(":"+cfg.Server.Port, nil)
 	if err != nil {
 		return
 	}
-
-	// TODO: init config: cleanenv
-	// библиотека cleanenv удобная минималистичная библиотека в отличии viper или cobra, в ней есть всё необходимое
-	// умеет читать из всех популярных файлов yaml, json, toml, .env и др.
-	// также удобно использовать struct tags, можем задавать required, default значение и др.
 
 	// TODO: init logger: slog
 	// библиотека slog является стандартной с версии go 1.21 и она самая актуальная
