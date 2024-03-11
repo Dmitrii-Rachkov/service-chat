@@ -2,17 +2,26 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
+
 	"service-chat/internal/config"
+	"service-chat/internal/logger"
 )
 
 func main() {
 	// Получаем конфиг из файла local.yaml
 	cfg := config.MustSetEnv()
-	fmt.Println(cfg)
+
+	// Создаём logger
+	log := logger.SetupLogger(cfg.Env)
+
+	// Выводим в консоль информацию о запуске нашего приложения, параметры конфига и режиме работы logger
+	log.Info("Start service-chat", slog.String("env", cfg.Env))
+	log.Debug("Debug messages is on")
 
 	//// connect to the DB (example)
-	//db, err := config.ConnectDB(cfg.Database.Host, cfg.Database.Port, cfg.Database.Username,
+	//db, err := db.ConnectDB(cfg.Database.Host, cfg.Database.Port, cfg.Database.Username,
 	//	cfg.Database.Password, cfg.Database.Name, cfg.Database.Connections)
 	//_ = db
 	//if err != nil {
@@ -38,9 +47,6 @@ func main() {
 	if err != nil {
 		return
 	}
-
-	// TODO: init logger: slog
-	// библиотека slog является стандартной с версии go 1.21 и она самая актуальная
 
 	// TODO: init storage (db): postgres
 	// наверное самая популярная реляционная база данных

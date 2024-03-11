@@ -1,7 +1,6 @@
 package config
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -9,7 +8,6 @@ import (
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
-	_ "github.com/lib/pq"
 )
 
 // Config - структура конфига из файла ./config/local.yaml
@@ -52,16 +50,4 @@ func MustSetEnv() *Config {
 	}
 
 	return &cfg
-}
-
-// ConnectDB - соединение с базой данных postgres
-func ConnectDB(host, port, user, password, name string, conn int) (*sql.DB, error) {
-	db, err := sql.Open("postgres",
-		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-			host, port, user, password, name))
-	if err != nil {
-		return nil, err
-	}
-	db.SetMaxOpenConns(conn)
-	return db, nil
 }
