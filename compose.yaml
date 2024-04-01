@@ -65,6 +65,6 @@ volumes:
 # храним пароль для базы данных в файле password.txt
 secrets:
   db-password:
-    file: db/password.txt
+    file: internal/db/password.txt
 
 
