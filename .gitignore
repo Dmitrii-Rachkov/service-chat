@@ -21,3 +21,6 @@
 go.work
 
 .idea/
+
+# DB_PASSWORD
+.env

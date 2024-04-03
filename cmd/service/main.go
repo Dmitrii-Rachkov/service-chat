@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	_ "github.com/lib/pq"
 	"log/slog"
 	"net/http"
-
 	"service-chat/internal/config"
+	"service-chat/internal/db"
 	"service-chat/internal/logger"
 )
 
@@ -20,12 +21,24 @@ func main() {
 	log.Info("Start service-chat", slog.String("env", cfg.Env))
 	log.Debug("Debug messages is on")
 
-	//// connect to the DB (example)
-	//db, err := db.ConnectDB(cfg.Database.Host, cfg.Database.Port, cfg.Database.Username,
+	// Инициализируем базу данных
+	database, errDB := db.NewPostgresDB(cfg)
+	if errDB != nil {
+		log.Error("Failed to start database, error:", errDB.Error())
+	}
+	log.Info("Database initialization was successful")
+
+	_ = database
+
+	//repos := db.NewDB(database)
+	//services := service.NewService(repos)
+
+	// connect to the DB (example)
+	//database, errDB := db.Conn(cfg.Database.Host, cfg.Database.Port, cfg.Database.Username,
 	//	cfg.Database.Password, cfg.Database.Name, cfg.Database.Connections)
-	//_ = db
-	//if err != nil {
-	//	fmt.Println("fail connect to db")
+	//_ = database
+	//if errDB != nil {
+	//	log.Error("Failed to start database, error:", errDB.Error())
 	//}
 	//
 	//http.HandleFunc("/db", func(w http.ResponseWriter, r *http.Request) {
@@ -48,8 +61,15 @@ func main() {
 		return
 	}
 
-	// TODO: init storage (db): postgres
-	// наверное самая популярная реляционная база данных
+	// TODO: init server and start
+
+	//// Инициализируем экземпляр сервера
+	//srv := new(server.Server)
+	//
+	//// Запускаем сервер
+	//if err = srv.Run(cfg); err != nil {
+	//	log.Error("Failed to start server, error:", err.Error())
+	//}
 
 	// TODO: init router: chi, chi render
 	// удобный, минималистичный, активно развивается, совместим с http/net стандартным пакетом

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"path/filepath"
@@ -23,6 +24,7 @@ type Config struct {
 		Password    string `yaml:"password"`
 		Name        string `yaml:"name"`
 		Connections int    `yaml:"connections"`
+		SSLMode     string `yaml:"sslmode"`
 	} `yaml:"database"`
 	Server struct {
 		Host        string        `yaml:"host" env-default:"localhost"`
@@ -48,6 +50,12 @@ func MustSetEnv() *Config {
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
 		log.Fatalf("cannot read config: %s", err)
 	}
+
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("error loading env variables: %s", err.Error())
+	}
+
+	cfg.Database.Password = os.Getenv("DB_PASSWORD")
 
 	return &cfg
 }

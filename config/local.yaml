@@ -3,12 +3,12 @@ env: local
 
 # Конфиг для база данных
 database:
-  host: localhost
-  port: 5436
+  host: clair_postgres
+  port: 5432
   username: postgres
-  password: qwerty
   name: db_chat
   connections: 10
+  sslmode: disable
 
 # Конфиг для сервера
 server:

@@ -23,10 +23,6 @@ services:
     #environment:
       #- DB_PASSWORD=qwerty
 
-    # другой способ хранить пароль в файле
-    secrets:
-      - db-password
-
     # Порядок аргументов можно менять, это не влияет на результат
 
 
@@ -36,18 +32,19 @@ services:
     restart: always
     # image, передаём название образа postgres
     image: postgres:latest
+    # имя контейнера, чтобы подключаться к базе без костылей
+    container_name: clair_postgres
     # имя пользователя
     user: postgres
-    # файл с паролем базы данных
-    secrets:
-      - db-password
     # Место хранения данных базы,
     volumes:
       - db-data:/var/lib/postgresql/data
     # environment, здесь указываем имена и значения переменных окружения базы данных
     environment:
       - POSTGRES_DB=db_chat
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+      #- POSTGRES_USER=my_user
+      - POSTGRES_PASSWORD=qwerty
+      #- POSTGRES_PASSWORD_FILE=/run/secrets/db-password
     # ports для базы данных
     ports:
       - "5436:5432"
@@ -61,10 +58,5 @@ services:
 # volumes для хранения данных из базы данных postgres
 volumes:
   db-data:
-
-# храним пароль для базы данных в файле password.txt
-secrets:
-  db-password:
-    file: internal/db/password.txt
 
 
