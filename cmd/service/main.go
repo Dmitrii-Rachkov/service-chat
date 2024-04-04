@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
-	_ "github.com/lib/pq"
 	"log/slog"
 	"net/http"
+
+	_ "github.com/lib/pq"
+
 	"service-chat/internal/config"
 	"service-chat/internal/db"
 	"service-chat/internal/logger"

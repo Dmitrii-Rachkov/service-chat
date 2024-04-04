@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"service-chat/internal/encryption"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -55,7 +56,12 @@ func MustSetEnv() *Config {
 		log.Fatalf("error loading env variables: %s", err.Error())
 	}
 
-	cfg.Database.Password = os.Getenv("DB_PASSWORD")
+	password, errDec := encryption.Decrypt(os.Getenv("DB_PASSWORD"))
+	if errDec != nil {
+		log.Fatalf("error decrypting your encrypted text: %s", errDec)
+	}
+
+	cfg.Database.Password = password
 
 	return &cfg
 }
