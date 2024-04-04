@@ -2,14 +2,15 @@ package config
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"path/filepath"
-	"service-chat/internal/encryption"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
+
+	"service-chat/internal/encryption"
 )
 
 // Config - структура конфига из файла ./config/local.yaml
@@ -52,15 +53,16 @@ func MustSetEnv() *Config {
 		log.Fatalf("cannot read config: %s", err)
 	}
 
+	// Получаем переменные окружения из файла .env
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("error loading env variables: %s", err.Error())
 	}
 
+	// Расшифровываем и устанавливаем пароль для базы данных
 	password, errDec := encryption.Decrypt(os.Getenv("DB_PASSWORD"))
 	if errDec != nil {
 		log.Fatalf("error decrypting your encrypted text: %s", errDec)
 	}
-
 	cfg.Database.Password = password
 
 	return &cfg

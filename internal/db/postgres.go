@@ -9,7 +9,10 @@ import (
 	"service-chat/internal/config"
 )
 
-const driver = "postgres"
+const (
+	driver = "postgres"
+	op     = "db.NewPostgresDB"
+)
 
 // NewPostgresDB - соединение с базой данных postgres
 func NewPostgresDB(cfg *config.Config) (*sql.DB, error) {
@@ -24,13 +27,13 @@ func NewPostgresDB(cfg *config.Config) (*sql.DB, error) {
 
 	db, err := sql.Open(driver, url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error path: %s, error: %w", op, err)
 	}
 
 	// Проверяем, что можем достучаться до базы данных
 	err = db.Ping()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	// Устанавливаем максимальное количество одновременных подключений к базе

@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/base64"
+	"fmt"
 	"log"
 	"os"
 
@@ -29,10 +30,11 @@ func encode(b []byte) string {
 
 // Encrypt - шифруем текст
 func Encrypt(text string) (string, error) {
+	const op = "encryption.Encrypt"
 	secret := mySecret()
 	block, err := aes.NewCipher([]byte(secret))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
 	plainText := []byte(text)
@@ -53,10 +55,11 @@ func decode(s string) []byte {
 
 // Decrypt - расшифровываем текст
 func Decrypt(text string) (string, error) {
+	const op = "encryption.Decrypt"
 	secret := mySecret()
 	block, err := aes.NewCipher([]byte(secret))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
 	cipherText := decode(text)

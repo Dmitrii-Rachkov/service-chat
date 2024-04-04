@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
+	"service-chat/internal/router"
 
 	_ "github.com/lib/pq"
 
@@ -26,11 +28,16 @@ func main() {
 	// Инициализируем базу данных
 	database, errDB := db.NewPostgresDB(cfg)
 	if errDB != nil {
-		log.Error("Failed to start database, error:", errDB.Error())
+		log.Error("Failed to start database", logger.Err(errDB))
+		os.Exit(1)
 	}
 	log.Info("Database initialization was successful")
 
 	_ = database
+
+	// Инициализируем роутер запросов
+	router := router.NewRouter()
+	_ = router
 
 	//repos := db.NewDB(database)
 	//services := service.NewService(repos)

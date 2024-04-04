@@ -3,11 +3,13 @@ package logger
 import (
 	"log/slog"
 	"os"
+
+	"service-chat/internal/logger/prettylog"
 )
 
 // slog - это не конкретно logger а некая обёртка, это библиотека для работы с логгерами
 // под капотом есть дефолтные логгеры: текстовый (например для локали) и JSON (для отправки например в kibana)
-// можно использовть и другие логгеры и также писать свои
+// можно использовать и другие логгеры и также писать свои
 
 const (
 	envLocal = "local"
@@ -26,9 +28,22 @@ func SetupLogger(env string) *slog.Logger {
 	case envLocal:
 		// Используем стандартный текстовый handler для записи в Stdout
 		// уровень логгирования debug
-		log = slog.New(
-			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
-		)
+		//w := os.Stderr
+		//log = slog.New(tint.NewHandler(w, &tint.Options{
+		//	Level:      slog.LevelDebug,
+		//	TimeFormat: time.TimeOnly,
+		//}))
+		opts := &slog.HandlerOptions{
+			Level:     slog.LevelDebug,
+			AddSource: false,
+			ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+				if a.Key == "nothing" {
+					return slog.Attr{}
+				}
+				return a
+			},
+		}
+		log = slog.New(prettylog.NewHandler(opts))
 	case envDev:
 		// Используем стандартный JSON handler для записи чтобы в дальнейшем передавать логи
 		// уровень логгирования debug
