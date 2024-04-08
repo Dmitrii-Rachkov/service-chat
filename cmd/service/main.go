@@ -5,13 +5,13 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"service-chat/internal/router"
 
 	_ "github.com/lib/pq"
 
 	"service-chat/internal/config"
 	"service-chat/internal/db"
 	"service-chat/internal/logger"
+	"service-chat/internal/router"
 )
 
 func main() {
@@ -20,6 +20,22 @@ func main() {
 
 	// Создаём logger
 	log := logger.SetupLogger(cfg.Env)
+
+	// Накатываем миграцию базы данных
+	errMigrateUp := db.MigrateUp(cfg)
+	if errMigrateUp != nil {
+		log.Error("Failed to up migrate", logger.Err(errMigrateUp))
+		os.Exit(1)
+	}
+	log.Info("Migrate Up is successful")
+
+	//// Откатываем миграцию базы данных
+	//errMigrateDown := db.MigrateDown(cfg)
+	//if errMigrateDown != nil {
+	//	log.Error("Failed to down migrate", logger.Err(errMigrateDown))
+	//	os.Exit(1)
+	//}
+	//log.Info("Migrate Down is successful")
 
 	// Выводим в консоль информацию о запуске нашего приложения, параметры конфига и режиме работы logger
 	log.Info("Start service-chat", slog.String("env", cfg.Env))
@@ -36,8 +52,8 @@ func main() {
 	_ = database
 
 	// Инициализируем роутер запросов
-	router := router.NewRouter()
-	_ = router
+	r := router.NewRouter()
+	_ = r
 
 	//repos := db.NewDB(database)
 	//services := service.NewService(repos)
@@ -79,10 +95,6 @@ func main() {
 	//if err = srv.Run(cfg); err != nil {
 	//	log.Error("Failed to start server, error:", err.Error())
 	//}
-
-	// TODO: init router: chi, chi render
-	// удобный, минималистичный, активно развивается, совместим с http/net стандартным пакетом
-	// chi render это один из пакетов chi для работы с структурами запросов и ответов
 
 	// TODO: handler sign-up и sign-in
 	// реализуем handlers для регистрации и авторизации с помощью JWT
