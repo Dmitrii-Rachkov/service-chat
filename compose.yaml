@@ -4,6 +4,8 @@ version: "3.8"
 services:
   # Контейнер service-chat который написан на go
   service-chat:
+    # имя контейнера для сервиса
+    container_name: web-service
     # Далее напишем ряд аргументов
     # build будет искать Dockerfile в текущей директории (./), на основании которого соберет контейнер
     build: ./
