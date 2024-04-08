@@ -1,0 +1,34 @@
+# Скачиваем базовый образ golang для нашего приложения
+FROM golang:1.21.7-alpine3.19 AS build-env
+# Создаём каталог внутри создаваемого образа
+WORKDIR /app
+# Копируем наши файлы с зависимостями из исходного кода в внутрь созданного образа
+# COPY go.mod go.sum ./
+# Следующая команда копирует все файлы .go из исходного кода в внутрь созданного образа
+# COPY *.go ./
+# Или можно скопировать все файлы исходного кода в внутрь созданного образа
+COPY ./ ./
+# Загружаем все модули для работы нашего приложения
+RUN go mod download
+# Компилируем наше приложение (файл main.go) в бинарный файл с именем chat-main в корень файловой системы образа
+RUN go build -o chat-main -gcflags="all=-N -l" ./cmd/service
+# Get Delve from a GOPATH not from a Go Modules project
+WORKDIR /go/src/
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+# final stage
+FROM alpine:3.19
+# Добавляем дебагер delve в контенер
+WORKDIR /
+COPY --from=build-env /go/bin/dlv /
+COPY --from=build-env /app /
+# Слушаем порт 9000 для прода и 40000 для дебага
+EXPOSE 8000 40000
+# Указываем Docker, какую команду следует запускать, когда образ используется для запуска контейнера
+# Т.е. как будто мы в терминале контейнера вводим команду
+CMD ["/dlv", "--listen=:40000", "--headless=true", "--api-version=2", "exec", "./chat-main"]
+
+
+
+
+
+
