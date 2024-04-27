@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// UserAdd - добавить нового пользователя
 // @Summary UserAdd
 // @Security ApiKeyAuth
 // @Tags User
@@ -18,8 +19,6 @@ import (
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /users/add [post]
-
-// UserAdd - добавить нового пользователя
 func UserAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>UserAdd</h1>")
@@ -30,6 +29,7 @@ func UserAdd() http.HandlerFunc {
 	}
 }
 
+// UserUpdate - редактирование пользователя
 // @Summary UserUpdate
 // @Security ApiKeyAuth
 // @Tags User
@@ -43,8 +43,6 @@ func UserAdd() http.HandlerFunc {
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /users/update [put]
-
-// UserUpdate - редактирование пользователя
 func UserUpdate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>UserUpdate</h1>")
@@ -55,6 +53,7 @@ func UserUpdate() http.HandlerFunc {
 	}
 }
 
+// UserDelete - удаление пользователя
 // @Summary UserDelete
 // @Security ApiKeyAuth
 // @Tags User
@@ -68,8 +67,6 @@ func UserUpdate() http.HandlerFunc {
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /users/delete [delete]
-
-// UserDelete - удаление пользователя
 func UserDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>UserDelete</h1>")

@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// SignUp - регистрация пользователя
 // @Summary SignUp
 // @Tags Auth
 // @Description User registration
@@ -17,8 +18,6 @@ import (
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /auth/sign-up [post]
-
-// SignUp - регистрация пользователя
 func SignUp() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>SignUp</h1>")
@@ -29,6 +28,12 @@ func SignUp() http.HandlerFunc {
 	}
 }
 
+type signInInput struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+// SignIn - авторизация пользователя
 // @Summary SignIn
 // @Tags Auth
 // @Description User authorization
@@ -41,8 +46,6 @@ func SignUp() http.HandlerFunc {
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /auth/sign-in [post]
-
-// SignIn - авторизация пользователя
 func SignIn() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>SignIn</h1>")

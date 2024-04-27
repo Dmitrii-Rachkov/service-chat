@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// MessageAdd - отправить сообщение в чат от лица пользователя
 // @Summary MessageAdd
 // @Security ApiKeyAuth
 // @Tags Message
@@ -18,8 +19,6 @@ import (
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /messages/add [post]
-
-// MessageAdd - отправить сообщение в чат от лица пользователя
 func MessageAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>MessageAdd</h1>")
@@ -30,6 +29,7 @@ func MessageAdd() http.HandlerFunc {
 	}
 }
 
+// MessageGet - получить список сообщений в конкретном чате
 // @Summary MessageGet
 // @Security ApiKeyAuth
 // @Tags Message
@@ -43,8 +43,6 @@ func MessageAdd() http.HandlerFunc {
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /messages/get [post]
-
-// MessageGet - получить список сообщений в конкретном чате
 func MessageGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>MessageGet</h1>")

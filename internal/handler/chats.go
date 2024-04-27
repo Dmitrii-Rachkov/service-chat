@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// ChatAdd - создать новый чат между пользователями
 // @Summary ChatAdd
 // @Security ApiKeyAuth
 // @Tags Chat
@@ -18,8 +19,6 @@ import (
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /chats/add [post]
-
-// ChatAdd - создать новый чат между пользователями
 func ChatAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>ChatAdd</h1>")
@@ -30,6 +29,7 @@ func ChatAdd() http.HandlerFunc {
 	}
 }
 
+// ChatDelete - удалить чат
 // @Summary ChatDelete
 // @Security ApiKeyAuth
 // @Tags Chat
@@ -43,8 +43,6 @@ func ChatAdd() http.HandlerFunc {
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /chats/delete [delete]
-
-// ChatDelete - удалить чат
 func ChatDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>ChatDelete</h1>")
@@ -55,6 +53,7 @@ func ChatDelete() http.HandlerFunc {
 	}
 }
 
+// ChatGet - получить список чатов конкретного пользователя
 // @Summary ChatGet
 // @Security ApiKeyAuth
 // @Tags Chat
@@ -68,8 +67,6 @@ func ChatDelete() http.HandlerFunc {
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /chats/get [post]
-
-// ChatGet - получить список чатов конкретного пользователя
 func ChatGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>ChatGet</h1>")
