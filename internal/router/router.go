@@ -2,11 +2,11 @@ package router
 
 import (
 	"fmt"
-	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 
 	_ "service-chat/docs"
 	"service-chat/internal/handler"
