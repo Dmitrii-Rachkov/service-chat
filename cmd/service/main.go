@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
+	"service-chat/server"
 
 	_ "github.com/lib/pq"
 
@@ -13,6 +12,17 @@ import (
 	"service-chat/internal/logger"
 	"service-chat/internal/router"
 )
+
+// @title Service Chat
+// @version 1.0
+// @description Providing an HTTP API for working with user chats and messages
+
+// @host localhost:9000
+// @BasePath /
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 
 func main() {
 	// Получаем конфиг из файла local.yaml
@@ -55,6 +65,14 @@ func main() {
 	r := router.NewRouter()
 	_ = r
 
+	// Инициализируем экземпляр сервера
+	srv := new(server.Server)
+
+	// Запускаем сервер
+	if err := srv.Run(cfg, r); err != nil {
+		log.Error("Failed to start server, error:", err.Error())
+	}
+
 	//repos := db.NewDB(database)
 	//services := service.NewService(repos)
 
@@ -73,27 +91,17 @@ func main() {
 	//http.ListenAndServe(":"+cfg.Server.Port, nil)
 
 	// Тестовый handler
-	http.HandleFunc("/docker", func(writer http.ResponseWriter, request *http.Request) {
-		fprintf, err := fmt.Fprintf(writer, "<h1>Hello from Docker container!</h1>")
-		if err != nil {
-			return
-		}
-		_ = fprintf
-	})
-
-	err := http.ListenAndServe(":"+cfg.Server.Port, nil)
-	if err != nil {
-		return
-	}
-
-	// TODO: init server and start
-
-	//// Инициализируем экземпляр сервера
-	//srv := new(server.Server)
+	//http.HandleFunc("/docker", func(writer http.ResponseWriter, request *http.Request) {
+	//	fprintf, err := fmt.Fprintf(writer, "<h1>Hello from Docker container!</h1>")
+	//	if err != nil {
+	//		return
+	//	}
+	//	_ = fprintf
+	//})
 	//
-	//// Запускаем сервер
-	//if err = srv.Run(cfg); err != nil {
-	//	log.Error("Failed to start server, error:", err.Error())
+	//err := http.ListenAndServe(":"+cfg.Server.Port, nil)
+	//if err != nil {
+	//	return
 	//}
 
 	// TODO: handler sign-up и sign-in

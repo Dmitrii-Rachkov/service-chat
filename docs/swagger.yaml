@@ -1,0 +1,14 @@
+basePath: /
+host: localhost:9000
+info:
+  contact: {}
+  description: Providing an HTTP API for working with user chats and messages
+  title: Service Chat
+  version: "1.0"
+paths: {}
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

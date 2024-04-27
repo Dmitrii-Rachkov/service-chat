@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"github.com/go-chi/chi/v5"
 	"net/http"
 
 	"service-chat/internal/config"
@@ -13,10 +14,10 @@ type Server struct {
 }
 
 // Run - запуск сервера
-func (s *Server) Run(cfg *config.Config) error {
+func (s *Server) Run(cfg *config.Config, router *chi.Mux) error {
 	s.httpServer = &http.Server{
-		Addr: ":" + cfg.Server.Port,
-		//Handler: router,
+		Addr:         ":" + cfg.Server.Port,
+		Handler:      router,
 		ReadTimeout:  cfg.Server.Timeout,
 		WriteTimeout: cfg.Server.Timeout,
 		IdleTimeout:  cfg.Server.IdleTimeout,
