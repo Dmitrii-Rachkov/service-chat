@@ -5,6 +5,20 @@ import (
 	"net/http"
 )
 
+// @Summary UserAdd
+// @Security ApiKeyAuth
+// @Tags User
+// @Description Add new user
+// @ID Add new user
+// @Accept json
+// @Produce json
+// @Param input body entity.User true "user info"
+// @Success 200 {integer} integer 1
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /users/add [post]
+
 // UserAdd - добавить нового пользователя
 func UserAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -16,6 +30,20 @@ func UserAdd() http.HandlerFunc {
 	}
 }
 
+// @Summary UserUpdate
+// @Security ApiKeyAuth
+// @Tags User
+// @Description Update user
+// @ID Update user
+// @Accept json
+// @Produce json
+// @Param input body entity.User true "user info"
+// @Success 200 {integer} integer 1
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /users/update [put]
+
 // UserUpdate - редактирование пользователя
 func UserUpdate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -26,6 +54,20 @@ func UserUpdate() http.HandlerFunc {
 		_ = fprintf
 	}
 }
+
+// @Summary UserDelete
+// @Security ApiKeyAuth
+// @Tags User
+// @Description Delete user
+// @ID Delete user
+// @Accept json
+// @Produce json
+// @Param input body entity.User true "user info"
+// @Success 200 {integer} integer 1
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /users/delete [delete]
 
 // UserDelete - удаление пользователя
 func UserDelete() http.HandlerFunc {

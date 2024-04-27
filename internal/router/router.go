@@ -2,11 +2,13 @@ package router
 
 import (
 	"fmt"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
+	_ "service-chat/docs"
 	"service-chat/internal/handler"
 )
 
@@ -26,6 +28,11 @@ func NewRouter() *chi.Mux {
 
 	// Пишем красивые URL при подключении к обработчику
 	r.Use(middleware.URLFormat)
+
+	// Swagger handler
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:9000/swagger/doc.json"), //The url pointing to API definition
+	))
 
 	// Тестовый handler
 	r.Get("/docker", func(writer http.ResponseWriter, request *http.Request) {
