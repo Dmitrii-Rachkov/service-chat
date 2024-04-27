@@ -14,7 +14,9 @@ https://blog.jetbrains.com/go/2020/05/06/debugging-a-go-application-inside-a-doc
 https://blog.jetbrains.com/go/2020/05/08/running-go-applications-using-docker-compose-in-goland/
 ### 3. Также в файле local.yaml необходимо указать параметр для базы данных - host: clair_postgres-debug
 
-
+# Swagger документация
+## 1. Можно посмотреть по ссылке:
+http://localhost:9000/swagger/index.html/
 
 # Структура проекта
 ## 1. cmd - точка входа в программу, здесь лежит файл main
