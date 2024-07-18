@@ -12,6 +12,7 @@ import (
 
 // MigrateUp - накатываем миграцию базы данных
 func MigrateUp(cfg *config.Config) error {
+	const op = "db.MigrateUp"
 	databaseURL := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=%v",
 		cfg.Database.Username,
 		cfg.Database.Password,
@@ -21,10 +22,10 @@ func MigrateUp(cfg *config.Config) error {
 		cfg.Database.SSLMode)
 	m, err := migrate.New("file://./internal/db/schema", databaseURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("error path: %s, error: %w", op, err)
 	}
-	if errUp := m.Up(); err != nil {
-		return errUp
+	if errUp := m.Up(); errUp != nil {
+		return fmt.Errorf("error path: %s, error: %w", op, errUp)
 	}
 
 	return nil
@@ -32,6 +33,7 @@ func MigrateUp(cfg *config.Config) error {
 
 // MigrateDown - откатываем миграцию базы данных
 func MigrateDown(cfg *config.Config) error {
+	const op = "db.MigrateDown"
 	databaseURL := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=%v",
 		cfg.Database.Username,
 		cfg.Database.Password,
@@ -41,10 +43,10 @@ func MigrateDown(cfg *config.Config) error {
 		cfg.Database.SSLMode)
 	m, err := migrate.New("file://./internal/db/schema", databaseURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("error path: %s, error: %w", op, err)
 	}
-	if errDown := m.Down(); err != nil {
-		return errDown
+	if errDown := m.Down(); errDown != nil {
+		return fmt.Errorf("error path: %s, error: %w", op, errDown)
 	}
 
 	return nil

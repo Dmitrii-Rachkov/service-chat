@@ -69,8 +69,9 @@ func main() {
 	srv := new(server.Server)
 
 	// Запускаем сервер
-	if err := srv.Run(cfg, r); err != nil {
-		log.Error("Failed to start server, error:", err.Error())
+	if errRunServer := srv.Run(cfg, r); errRunServer != nil {
+		log.Error("Failed to start server, error:", logger.Err(errRunServer))
+		os.Exit(1)
 	}
 
 	//repos := db.NewDB(database)
