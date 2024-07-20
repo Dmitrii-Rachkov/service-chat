@@ -19,7 +19,7 @@ import (
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /chats/add [post]
-func ChatAdd() http.HandlerFunc {
+func (h *Handler) ChatAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>ChatAdd</h1>")
 		if err != nil {
@@ -43,7 +43,7 @@ func ChatAdd() http.HandlerFunc {
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /chats/delete [delete]
-func ChatDelete() http.HandlerFunc {
+func (h *Handler) ChatDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>ChatDelete</h1>")
 		if err != nil {
@@ -67,7 +67,7 @@ func ChatDelete() http.HandlerFunc {
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /chats/get [post]
-func ChatGet() http.HandlerFunc {
+func (h *Handler) ChatGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>ChatGet</h1>")
 		if err != nil {

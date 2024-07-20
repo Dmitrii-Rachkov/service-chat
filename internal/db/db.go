@@ -1,11 +1,16 @@
 package db
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"service-chat/internal/entity"
+)
 
 // Здесь интерфейсы для слоя базы данных нашего приложения
 
 // Authorization - интерфейс авторизации
 type Authorization interface {
+	CreateUser(user entity.User) (int, error)
 }
 
 // Chat - интерфейс для чатов
@@ -25,5 +30,7 @@ type DB struct {
 
 // NewDB - конструктор базы данных
 func NewDB(db *sql.DB) *DB {
-	return &DB{}
+	return &DB{
+		Authorization: NewAuthPostgres(db),
+	}
 }

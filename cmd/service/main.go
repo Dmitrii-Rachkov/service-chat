@@ -3,14 +3,15 @@ package main
 import (
 	"log/slog"
 	"os"
-	"service-chat/server"
 
 	_ "github.com/lib/pq"
 
 	"service-chat/internal/config"
 	"service-chat/internal/db"
+	"service-chat/internal/handler"
 	"service-chat/internal/logger"
-	"service-chat/internal/router"
+	"service-chat/internal/service"
+	"service-chat/server"
 )
 
 // @title Service Chat
@@ -32,20 +33,12 @@ func main() {
 	log := logger.SetupLogger(cfg.Env)
 
 	// Накатываем миграцию базы данных
-	errMigrateUp := db.MigrateUp(cfg)
+	errMigrateUp := db.MigrateUp(cfg, log)
 	if errMigrateUp != nil {
 		log.Error("Failed to up migrate", logger.Err(errMigrateUp))
 		os.Exit(1)
 	}
 	log.Info("Migrate Up is successful")
-
-	//// Откатываем миграцию базы данных
-	//errMigrateDown := db.MigrateDown(cfg)
-	//if errMigrateDown != nil {
-	//	log.Error("Failed to down migrate", logger.Err(errMigrateDown))
-	//	os.Exit(1)
-	//}
-	//log.Info("Migrate Down is successful")
 
 	// Выводим в консоль информацию о запуске нашего приложения, параметры конфига и режиме работы logger
 	log.Info("Start service-chat", slog.String("env", cfg.Env))
@@ -59,23 +52,20 @@ func main() {
 	}
 	log.Info("Database initialization was successful")
 
-	_ = database
-
-	// Инициализируем роутер запросов
-	r := router.NewRouter()
-	_ = r
+	// Собираем наши слои проекта
+	repos := db.NewDB(database)
+	services := service.NewService(repos)
+	handlers := handler.NewHandler(services)
 
 	// Инициализируем экземпляр сервера
 	srv := new(server.Server)
 
 	// Запускаем сервер
-	if errRunServer := srv.Run(cfg, r); errRunServer != nil {
+	if errRunServer := srv.Run(cfg, handlers.NewRouter(log)); errRunServer != nil {
 		log.Error("Failed to start server, error:", logger.Err(errRunServer))
 		os.Exit(1)
 	}
-
-	//repos := db.NewDB(database)
-	//services := service.NewService(repos)
+	log.Info("Server started")
 
 	// connect to the DB (example)
 	//database, errDB := db.Conn(cfg.Database.Host, cfg.Database.Port, cfg.Database.Username,

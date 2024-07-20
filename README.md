@@ -8,11 +8,12 @@ make up-service
 
 # Debug режим
 
-### 1. для отладки необходимо использовать файлы Dockerfile.debug и compose.debug.yaml
-### 2. Необходимо настроить запуск в IDE согласно этим двум инструкциям:
+### 1. Для отладки необходимо использовать файлы Dockerfile.debug и compose.debug.yaml
+### 2. Запустите файл compose.debug.yaml прямо с зеленой кнопки в IDE
+### 3. Необходимо настроить запуск в IDE согласно этим двум инструкциям:
 https://blog.jetbrains.com/go/2020/05/06/debugging-a-go-application-inside-a-docker-container/
 https://blog.jetbrains.com/go/2020/05/08/running-go-applications-using-docker-compose-in-goland/
-### 3. Также в файле local.yaml необходимо указать параметр для базы данных - host: clair_postgres-debug
+### 4. Также в файле local.yaml необходимо указать параметр для базы данных - host: clair-postgres-debug
 
 # Swagger документация
 ## 1. Можно посмотреть по ссылке:

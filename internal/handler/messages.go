@@ -19,7 +19,7 @@ import (
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /messages/add [post]
-func MessageAdd() http.HandlerFunc {
+func (h *Handler) MessageAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>MessageAdd</h1>")
 		if err != nil {
@@ -43,7 +43,7 @@ func MessageAdd() http.HandlerFunc {
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /messages/get [post]
-func MessageGet() http.HandlerFunc {
+func (h *Handler) MessageGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>MessageGet</h1>")
 		if err != nil {
