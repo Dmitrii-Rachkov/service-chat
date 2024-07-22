@@ -16,8 +16,9 @@ https://blog.jetbrains.com/go/2020/05/08/running-go-applications-using-docker-co
 ### 4. Также в файле local.yaml необходимо указать параметр для базы данных - host: clair-postgres-debug
 
 # Swagger документация
-## 1. Можно посмотреть по ссылке:
+### 1. Можно посмотреть по ссылке:
 http://localhost:9000/swagger/index.html/
+### 2. Генерация схемы - swag init -g cmd/service/main.go
 
 # Структура проекта
 ## 1. cmd - точка входа в программу, здесь лежит файл main

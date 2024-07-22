@@ -8,8 +8,6 @@ import (
 	"service-chat/internal/entity"
 )
 
-const op = "db.CreateUser"
-
 type AuthPostgres struct {
 	db *sql.DB
 }
