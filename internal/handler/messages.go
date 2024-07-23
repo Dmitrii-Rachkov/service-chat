@@ -15,9 +15,9 @@ import (
 // @Produce json
 // @Param input body entity.Message true "message info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /messages/add [post]
 func (h *Handler) MessageAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -39,9 +39,9 @@ func (h *Handler) MessageAdd() http.HandlerFunc {
 // @Produce json
 // @Param input body entity.Message true "message info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /messages/get [post]
 func (h *Handler) MessageGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

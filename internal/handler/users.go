@@ -15,9 +15,9 @@ import (
 // @Produce json
 // @Param input body entity.User true "user info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /users/add [post]
 func (h *Handler) UserAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -39,9 +39,9 @@ func (h *Handler) UserAdd() http.HandlerFunc {
 // @Produce json
 // @Param input body entity.User true "user info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /users/update [put]
 func (h *Handler) UserUpdate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -63,9 +63,9 @@ func (h *Handler) UserUpdate() http.HandlerFunc {
 // @Produce json
 // @Param input body entity.User true "user info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /users/delete [delete]
 func (h *Handler) UserDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

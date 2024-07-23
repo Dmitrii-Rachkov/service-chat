@@ -15,9 +15,9 @@ import (
 // @Produce json
 // @Param input body entity.Chat true "chat info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /chats/add [post]
 func (h *Handler) ChatAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -39,9 +39,9 @@ func (h *Handler) ChatAdd() http.HandlerFunc {
 // @Produce json
 // @Param input body entity.Chat true "chat info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /chats/delete [delete]
 func (h *Handler) ChatDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -63,9 +63,9 @@ func (h *Handler) ChatDelete() http.HandlerFunc {
 // @Produce json
 // @Param input body entity.Chat true "chat info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /chats/get [post]
 func (h *Handler) ChatGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

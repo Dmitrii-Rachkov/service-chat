@@ -2,8 +2,9 @@ package service
 
 import (
 	"service-chat/internal/db"
+	"service-chat/internal/db/entity"
+	"service-chat/internal/dto"
 	"service-chat/internal/encryption"
-	"service-chat/internal/entity"
 )
 
 type AuthService struct {
@@ -16,14 +17,18 @@ func NewAuthService(repo db.Authorization) *AuthService {
 }
 
 // CreateUser - реализуем интерфейс функции CreateUser передав данные со слоя бизнес логики на слой базы данных
-func (s *AuthService) CreateUser(user entity.User) (int, error) {
+func (s *AuthService) CreateUser(user dto.SignUpRequest) (int, error) {
 	// Шифруем пароль, чтобы хранить в базе не в открытом виде
 	passwordHash, err := encryption.Encrypt(user.Password)
 	if err != nil {
 		return 0, err
 	}
-	user.Password = passwordHash
+
+	dataDB := entity.User{
+		Username: user.Username,
+		Password: passwordHash,
+	}
 
 	// Передаём в слой базы данных
-	return s.repo.CreateUser(user)
+	return s.repo.CreateUser(dataDB)
 }

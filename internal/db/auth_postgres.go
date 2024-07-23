@@ -7,7 +7,7 @@ import (
 
 	"github.com/lib/pq"
 
-	"service-chat/internal/entity"
+	"service-chat/internal/db/entity"
 )
 
 const (

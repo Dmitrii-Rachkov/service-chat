@@ -2,7 +2,7 @@ package service
 
 import (
 	"service-chat/internal/db"
-	"service-chat/internal/entity"
+	"service-chat/internal/dto"
 )
 
 // Здесь интерфейсы для слоя бизнес-логики нашего приложения
@@ -10,7 +10,7 @@ import (
 // Authorization - интерфейс авторизации
 type Authorization interface {
 	// CreateUser - функция для создания нового пользователя в базе и вернуть его id или ошибку
-	CreateUser(user entity.User) (int, error)
+	CreateUser(user dto.SignUpRequest) (int, error)
 }
 
 // Chat - интерфейс для чатов

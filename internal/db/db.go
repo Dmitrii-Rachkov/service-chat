@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 
-	"service-chat/internal/entity"
+	"service-chat/internal/db/entity"
 )
 
 // Здесь интерфейсы для слоя базы данных нашего приложения

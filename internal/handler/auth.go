@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 
-	"service-chat/internal/entity"
+	"service-chat/internal/dto"
 	"service-chat/internal/logger"
 	"service-chat/internal/validate"
 )
@@ -21,7 +21,7 @@ import (
 // @ID User registration
 // @Accept json
 // @Produce json
-// @Param input body entity.User true "user info"
+// @Param input body dto.SignUpRequest true "user info"
 // @Success 200 {object} Response
 // @Failure 400,404,405 {object} Response
 // @Failure 500 {object} Response
@@ -37,22 +37,22 @@ func (h *Handler) SignUp(log *slog.Logger) http.HandlerFunc {
 		)
 
 		// Структура для записи входных данных из JSON от пользователя
-		var req entity.User
+		var req dto.SignUpRequest
 
 		// Анализируем запрос от пользователя
-		data := validate.BaseValidate(log, r.Body, req)
-		if data.ValidateErr != nil {
-			render.JSON(w, r, ValidationError(data.ValidateErr))
+		fail := validate.BaseValidate(log, r.Body, &req)
+		if fail != nil && fail.ValidateErr != nil {
+			render.JSON(w, r, ValidationError(fail.ValidateErr))
 
 			return
-		} else if data.Err != "" {
-			render.JSON(w, r, Error(data.Err))
+		} else if fail != nil && fail.ErrMsg != "" {
+			render.JSON(w, r, Error(fail.ErrMsg))
 
 			return
 		}
 
 		// Отправляем валидную структуру на слой сервиса
-		id, errCreate := h.services.Authorization.CreateUser(data.User)
+		id, errCreate := h.services.Authorization.CreateUser(req)
 		if errCreate != nil && strings.Contains(errCreate.Error(), "unique_violation") {
 			log.Error("user already exists", logger.Err(errCreate))
 			render.JSON(w, r, Error("User already exists"))
@@ -80,11 +80,11 @@ func (h *Handler) SignUp(log *slog.Logger) http.HandlerFunc {
 // @ID User authorization
 // @Accept json
 // @Produce json
-// @Param input body signInInput true "credentials"
+// @Param input body dto.SignInRequest true "credentials"
 // @Success 200 {string} string "token"
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /auth/sign-in [post]
 func (h *Handler) SignIn() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
