@@ -1,7 +1,8 @@
-package router
+package handler
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -9,10 +10,19 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	_ "service-chat/docs"
-	"service-chat/internal/handler"
+	"service-chat/internal/service"
 )
 
-func NewRouter() *chi.Mux {
+type Handler struct {
+	services *service.Service
+}
+
+// NewHandler - Слой обработки запросов
+func NewHandler(services *service.Service) *Handler {
+	return &Handler{services: services}
+}
+
+func (h *Handler) NewRouter(log *slog.Logger) *chi.Mux {
 	// Инициализируем роутер
 	r := chi.NewRouter()
 
@@ -47,28 +57,28 @@ func NewRouter() *chi.Mux {
 
 	// Регистрация и авторизация
 	r.Route("/auth", func(r chi.Router) {
-		r.Post("/sign-up", handler.SignUp()) // POST /auth/sign-up
-		r.Post("/sign-in", handler.SignIn()) // POST /auth/sign-in
+		r.Post("/sign-up", h.SignUp(log)) // POST /auth/sign-up
+		r.Post("/sign-in", h.SignIn())    // POST /auth/sign-in
 	})
 
 	// Работа с сущностью пользователя
 	r.Route("/users", func(r chi.Router) {
-		r.Post("/add", handler.UserAdd())         // POST /users/add
-		r.Put("/update", handler.UserUpdate())    // PUT /users/update
-		r.Delete("/delete", handler.UserDelete()) // DELETE /users/delete
+		r.Post("/add", h.UserAdd())         // POST /users/add
+		r.Put("/update", h.UserUpdate())    // PUT /users/update
+		r.Delete("/delete", h.UserDelete()) // DELETE /users/delete
 	})
 
 	// Работа с чатами
 	r.Route("/chats", func(r chi.Router) {
-		r.Post("/add", handler.ChatAdd())         // POST /chats/add
-		r.Delete("/delete", handler.ChatDelete()) // DELETE /chats/delete
-		r.Post("/get", handler.ChatGet())         // POST /chats/get
+		r.Post("/add", h.ChatAdd())         // POST /chats/add
+		r.Delete("/delete", h.ChatDelete()) // DELETE /chats/delete
+		r.Post("/get", h.ChatGet())         // POST /chats/get
 	})
 
 	// Работа с сообщениями
 	r.Route("/messages", func(r chi.Router) {
-		r.Post("/add", handler.MessageAdd()) // POST /messages/add
-		r.Post("/get", handler.MessageGet()) // POST /messages/get
+		r.Post("/add", h.MessageAdd()) // POST /messages/add
+		r.Post("/get", h.MessageGet()) // POST /messages/get
 	})
 
 	return r

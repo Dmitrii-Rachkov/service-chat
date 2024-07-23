@@ -44,7 +44,7 @@ services:
     # image, передаём название образа postgres
     image: postgres:latest
     # имя контейнера, чтобы подключаться к базе без костылей
-    container_name: clair_postgres-debug
+    container_name: clair-postgres-debug
     # имя пользователя
     user: postgres
     # Место хранения данных базы,

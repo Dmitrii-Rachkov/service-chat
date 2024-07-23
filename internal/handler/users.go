@@ -15,11 +15,11 @@ import (
 // @Produce json
 // @Param input body entity.User true "user info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /users/add [post]
-func UserAdd() http.HandlerFunc {
+func (h *Handler) UserAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>UserAdd</h1>")
 		if err != nil {
@@ -39,11 +39,11 @@ func UserAdd() http.HandlerFunc {
 // @Produce json
 // @Param input body entity.User true "user info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /users/update [put]
-func UserUpdate() http.HandlerFunc {
+func (h *Handler) UserUpdate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>UserUpdate</h1>")
 		if err != nil {
@@ -63,11 +63,11 @@ func UserUpdate() http.HandlerFunc {
 // @Produce json
 // @Param input body entity.User true "user info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /users/delete [delete]
-func UserDelete() http.HandlerFunc {
+func (h *Handler) UserDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>UserDelete</h1>")
 		if err != nil {

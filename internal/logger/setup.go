@@ -26,13 +26,8 @@ func SetupLogger(env string) *slog.Logger {
 	// В зависимости от окружения устанавливаем наш logger
 	switch env {
 	case envLocal:
-		// Используем стандартный текстовый handler для записи в Stdout
+		// Используем красивый текстовый handler для записи в Stdout
 		// уровень логгирования debug
-		//w := os.Stderr
-		//log = slog.New(tint.NewHandler(w, &tint.Options{
-		//	Level:      slog.LevelDebug,
-		//	TimeFormat: time.TimeOnly,
-		//}))
 		opts := &slog.HandlerOptions{
 			Level:     slog.LevelDebug,
 			AddSource: false,

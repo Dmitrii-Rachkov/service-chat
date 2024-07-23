@@ -2,7 +2,16 @@ package handler
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
+	"strings"
+
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/render"
+
+	"service-chat/internal/dto"
+	"service-chat/internal/logger"
+	"service-chat/internal/validate"
 )
 
 // SignUp - регистрация пользователя
@@ -12,25 +21,56 @@ import (
 // @ID User registration
 // @Accept json
 // @Produce json
-// @Param input body entity.User true "user info"
-// @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Param input body dto.SignUpRequest true "user info"
+// @Success 200 {object} Response
+// @Failure 400,404,405 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /auth/sign-up [post]
-func SignUp() http.HandlerFunc {
+func (h *Handler) SignUp(log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fprintf, err := fmt.Fprintf(w, "<h1>SignUp</h1>")
-		if err != nil {
+		// Логируем наш запрос
+		const op = "handler.SignUp"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+
+		// Структура для записи входных данных из JSON от пользователя
+		var req dto.SignUpRequest
+
+		// Анализируем запрос от пользователя
+		fail := validate.BaseValidate(log, r.Body, &req)
+		if fail != nil && fail.ValidateErr != nil {
+			render.JSON(w, r, ValidationError(fail.ValidateErr))
+
+			return
+		} else if fail != nil && fail.ErrMsg != "" {
+			render.JSON(w, r, Error(fail.ErrMsg))
+
 			return
 		}
-		_ = fprintf
-	}
-}
 
-type signInInput struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+		// Отправляем валидную структуру на слой сервиса
+		id, errCreate := h.services.Authorization.CreateUser(req)
+		if errCreate != nil && strings.Contains(errCreate.Error(), "unique_violation") {
+			log.Error("user already exists", logger.Err(errCreate))
+			render.JSON(w, r, Error("User already exists"))
+
+			return
+		} else if errCreate != nil {
+			log.Error("failed to create user", logger.Err(errCreate))
+			render.JSON(w, r, Error("Failed to create user"))
+
+			return
+		}
+
+		// Если ошибок нет отправляем успешный ответ
+		log.Info("Create user is successful", slog.Int("id", id))
+		render.JSON(w, r, OK(fmt.Sprintf("Create user is successful, id: %d", id)))
+
+		return
+	}
 }
 
 // SignIn - авторизация пользователя
@@ -40,13 +80,13 @@ type signInInput struct {
 // @ID User authorization
 // @Accept json
 // @Produce json
-// @Param input body signInInput true "credentials"
+// @Param input body dto.SignInRequest true "credentials"
 // @Success 200 {string} string "token"
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /auth/sign-in [post]
-func SignIn() http.HandlerFunc {
+func (h *Handler) SignIn() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>SignIn</h1>")
 		if err != nil {

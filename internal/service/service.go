@@ -1,11 +1,16 @@
 package service
 
-import "service-chat/internal/db"
+import (
+	"service-chat/internal/db"
+	"service-chat/internal/dto"
+)
 
 // Здесь интерфейсы для слоя бизнес-логики нашего приложения
 
 // Authorization - интерфейс авторизации
 type Authorization interface {
+	// CreateUser - функция для создания нового пользователя в базе и вернуть его id или ошибку
+	CreateUser(user dto.SignUpRequest) (int, error)
 }
 
 // Chat - интерфейс для чатов
@@ -25,5 +30,7 @@ type Service struct {
 
 // NewService - конструктор сервиса
 func NewService(db *db.DB) *Service {
-	return &Service{}
+	return &Service{
+		Authorization: NewAuthService(db.Authorization),
+	}
 }

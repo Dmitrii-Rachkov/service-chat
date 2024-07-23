@@ -1,5 +1,31 @@
 basePath: /
 definitions:
+  dto.SignInRequest:
+    properties:
+      password:
+        maxLength: 12
+        minLength: 6
+        type: string
+      username:
+        maxLength: 20
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  dto.SignUpRequest:
+    properties:
+      password:
+        maxLength: 12
+        minLength: 6
+        type: string
+      username:
+        maxLength: 20
+        type: string
+    required:
+    - password
+    - username
+    type: object
   entity.Chat:
     properties:
       createdAt:
@@ -31,24 +57,24 @@ definitions:
       isDeleted:
         type: boolean
       password:
+        maxLength: 12
+        minLength: 6
         type: string
       username:
-        type: string
-    type: object
-  handler.errorResponse:
-    properties:
-      message:
-        type: string
-    type: object
-  handler.signInInput:
-    properties:
-      password:
-        type: string
-      username:
+        maxLength: 20
         type: string
     required:
     - password
     - username
+    type: object
+  handler.Response:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+      status:
+        type: string
     type: object
 host: localhost:9000
 info:
@@ -69,7 +95,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/handler.signInInput'
+          $ref: '#/definitions/dto.SignInRequest'
       produces:
       - application/json
       responses:
@@ -80,19 +106,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
       summary: SignIn
       tags:
       - Auth
@@ -108,30 +134,34 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/entity.User'
+          $ref: '#/definitions/dto.SignUpRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: integer
+            $ref: '#/definitions/handler.Response'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
+        "405":
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/handler.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
       summary: SignUp
       tags:
       - Auth
@@ -158,19 +188,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
       security:
       - ApiKeyAuth: []
       summary: ChatAdd
@@ -199,19 +229,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
       security:
       - ApiKeyAuth: []
       summary: ChatDelete
@@ -240,19 +270,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
       security:
       - ApiKeyAuth: []
       summary: ChatGet
@@ -281,19 +311,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
       security:
       - ApiKeyAuth: []
       summary: MessageAdd
@@ -322,19 +352,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
       security:
       - ApiKeyAuth: []
       summary: MessageGet
@@ -363,19 +393,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
       security:
       - ApiKeyAuth: []
       summary: UserAdd
@@ -404,19 +434,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
       security:
       - ApiKeyAuth: []
       summary: UserDelete
@@ -445,19 +475,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/handler.errorResponse'
+            $ref: '#/definitions/handler.Response'
       security:
       - ApiKeyAuth: []
       summary: UserUpdate

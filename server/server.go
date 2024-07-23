@@ -2,8 +2,9 @@ package server
 
 import (
 	"context"
-	"github.com/go-chi/chi/v5"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 
 	"service-chat/internal/config"
 )

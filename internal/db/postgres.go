@@ -11,11 +11,11 @@ import (
 
 const (
 	driver = "postgres"
-	op     = "db.NewPostgresDB"
 )
 
 // NewPostgresDB - соединение с базой данных postgres
 func NewPostgresDB(cfg *config.Config) (*sql.DB, error) {
+	const op = "db.NewPostgresDB"
 	// Параметры подключения к базе данных
 	url := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=%v",
 		cfg.Database.Username,

@@ -15,11 +15,11 @@ import (
 // @Produce json
 // @Param input body entity.Message true "message info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /messages/add [post]
-func MessageAdd() http.HandlerFunc {
+func (h *Handler) MessageAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>MessageAdd</h1>")
 		if err != nil {
@@ -39,11 +39,11 @@ func MessageAdd() http.HandlerFunc {
 // @Produce json
 // @Param input body entity.Message true "message info"
 // @Success 200 {integer} integer 1
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
+// @Failure 400,404 {object} Response
+// @Failure 500 {object} Response
+// @Failure default {object} Response
 // @Router /messages/get [post]
-func MessageGet() http.HandlerFunc {
+func (h *Handler) MessageGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fprintf, err := fmt.Fprintf(w, "<h1>MessageGet</h1>")
 		if err != nil {
