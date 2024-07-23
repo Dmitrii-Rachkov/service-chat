@@ -12,10 +12,6 @@ const (
 	StatusError = "Error"
 )
 
-type errorResponse struct {
-	Message string `json:"message"`
-}
-
 type Response struct {
 	Status  string `json:"status"`
 	Error   string `json:"error,omitempty"`
@@ -42,15 +38,17 @@ func ValidationError(errs validator.ValidationErrors) Response {
 	for _, err := range errs {
 		switch err.ActualTag() {
 		case "required":
-			errMsgs = append(errMsgs, fmt.Sprintf("field %s is a required field", err.Field()))
+			errMsgs = append(errMsgs, fmt.Sprintf("Field %s is a required field", err.Field()))
 		case "max":
-			errMsgs = append(errMsgs, fmt.Sprintf("field %s cannot exceed 20 characters", err.Field()))
+			errMsgs = append(errMsgs, fmt.Sprintf("Field %s cannot exceed 20 characters", err.Field()))
 		case "min":
-			errMsgs = append(errMsgs, fmt.Sprintf("field %s must contain at least 6 characters", err.Field()))
+			errMsgs = append(errMsgs, fmt.Sprintf("Field %s must contain at least 6 characters", err.Field()))
 		case "containsany":
-			errMsgs = append(errMsgs, fmt.Sprintf("field %s must contain Latin letters and Arabic numerals, as well as the symbols @#$&*()", err.Field()))
+			errMsgs = append(errMsgs, fmt.Sprintf("Field %s must contain Latin letters and Arabic numerals, as well as the symbols @#$&*()", err.Field()))
+		case "excludesall":
+			errMsgs = append(errMsgs, fmt.Sprintf("Field %s must not contain symbols !@#$&*()?", err.Field()))
 		default:
-			errMsgs = append(errMsgs, fmt.Sprintf("field %s is not valid", err.Field()))
+			errMsgs = append(errMsgs, fmt.Sprintf("Field %s is not valid", err.Field()))
 		}
 	}
 
