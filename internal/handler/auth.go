@@ -81,17 +81,53 @@ func (h *Handler) SignUp(log *slog.Logger) http.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param input body dto.SignInRequest true "credentials"
-// @Success 200 {string} string "token"
-// @Failure 400,404 {object} Response
+// @Success 200 {object} Response
+// @Failure 400,404,405 {object} Response
 // @Failure 500 {object} Response
 // @Failure default {object} Response
 // @Router /auth/sign-in [post]
-func (h *Handler) SignIn() http.HandlerFunc {
+func (h *Handler) SignIn(log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fprintf, err := fmt.Fprintf(w, "<h1>SignIn</h1>")
-		if err != nil {
+		// Логируем наш запрос
+		const op = "handler.SignIn"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+
+		// Структура для записи входных данных из JSON от пользователя
+		var req dto.SignInRequest
+
+		// Анализируем запрос от пользователя
+		fail := validate.BaseValidate(log, r.Body, &req)
+		if fail != nil && fail.ValidateErr != nil {
+			render.JSON(w, r, ValidationError(fail.ValidateErr))
+
+			return
+		} else if fail != nil && fail.ErrMsg != "" {
+			render.JSON(w, r, Error(fail.ErrMsg))
+
 			return
 		}
-		_ = fprintf
+
+		// Отправляем валидную структуру на слой сервиса
+		token, errToken := h.services.Authorization.GenerateToken(req)
+		if errToken != nil && strings.Contains(errToken.Error(), "sql: no rows in result set") {
+			log.Error("user not found", logger.Err(errToken))
+			render.JSON(w, r, Error("User not found"))
+
+			return
+		} else if errToken != nil {
+			log.Error("failed to generation jwt token", logger.Err(errToken))
+			render.JSON(w, r, Error(fmt.Sprintf("Failed to generation jwt token: %s", errToken)))
+
+			return
+		}
+
+		// Если ошибок нет отправляем успешный ответ
+		log.Info("Authorization successful", slog.String("token", token))
+		render.JSON(w, r, OK(fmt.Sprintf("Authorization successful, token: %s", token)))
+
+		return
 	}
 }

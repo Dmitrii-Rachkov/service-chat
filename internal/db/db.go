@@ -11,6 +11,7 @@ import (
 // Authorization - интерфейс авторизации
 type Authorization interface {
 	CreateUser(user entity.User) (int, error)
+	GetUser(user entity.User) (*entity.User, error)
 }
 
 // Chat - интерфейс для чатов

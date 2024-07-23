@@ -58,7 +58,7 @@ func (h *Handler) NewRouter(log *slog.Logger) *chi.Mux {
 	// Регистрация и авторизация
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/sign-up", h.SignUp(log)) // POST /auth/sign-up
-		r.Post("/sign-in", h.SignIn())    // POST /auth/sign-in
+		r.Post("/sign-in", h.SignIn(log)) // POST /auth/sign-in
 	})
 
 	// Работа с сущностью пользователя
