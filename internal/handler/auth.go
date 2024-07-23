@@ -1,19 +1,17 @@
 package handler
 
 import (
-	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
 
 	"service-chat/internal/entity"
 	"service-chat/internal/logger"
+	"service-chat/internal/validate"
 )
 
 // SignUp - регистрация пользователя
@@ -42,52 +40,26 @@ func (h *Handler) SignUp(log *slog.Logger) http.HandlerFunc {
 		var req entity.User
 
 		// Анализируем запрос от пользователя
-		err := render.DecodeJSON(r.Body, &req)
-
-		// Если получили запрос с пустым телом
-		if errors.Is(err, io.EOF) {
-			log.Error("request body is empty")
-			render.JSON(w, r, Error("Empty request"))
+		data := validate.BaseValidate(log, r.Body, req)
+		if data.ValidateErr != nil {
+			render.JSON(w, r, ValidationError(data.ValidateErr))
 
 			return
-		}
-
-		// Если не удалось декодировать запрос от пользователя
-		if err != nil {
-			log.Error("failed to decode request body", logger.Err(err))
-			render.JSON(w, r, Error("Failed to decode request"))
-
-			return
-		}
-
-		log.Info("request body decoded", slog.Any("requestBody", req))
-
-		// Проверяем, что обязательные поля Username и Password заполнены верно
-		if err = validator.New().Struct(req); err != nil {
-			var validateErr validator.ValidationErrors
-			match := errors.As(err, &validateErr)
-			if !match {
-				log.Error("failed to validate required fields in request body", logger.Err(err))
-				render.JSON(w, r, Error("Failed to validate request fields"))
-
-				return
-			}
-
-			log.Error("invalid request", logger.Err(err))
-			render.JSON(w, r, ValidationError(validateErr))
+		} else if data.Err != "" {
+			render.JSON(w, r, Error(data.Err))
 
 			return
 		}
 
 		// Отправляем валидную структуру на слой сервиса
-		id, errCreate := h.services.Authorization.CreateUser(req)
+		id, errCreate := h.services.Authorization.CreateUser(data.User)
 		if errCreate != nil && strings.Contains(errCreate.Error(), "unique_violation") {
 			log.Error("user already exists", logger.Err(errCreate))
 			render.JSON(w, r, Error("User already exists"))
 
 			return
 		} else if errCreate != nil {
-			log.Error("failed to create user", logger.Err(err))
+			log.Error("failed to create user", logger.Err(errCreate))
 			render.JSON(w, r, Error("Failed to create user"))
 
 			return
@@ -99,11 +71,6 @@ func (h *Handler) SignUp(log *slog.Logger) http.HandlerFunc {
 
 		return
 	}
-}
-
-type signInInput struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
 }
 
 // SignIn - авторизация пользователя
