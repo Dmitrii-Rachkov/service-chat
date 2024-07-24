@@ -13,6 +13,8 @@ type Authorization interface {
 	CreateUser(user dto.SignUpRequest) (int, error)
 	// GenerateToken - создаём токен для авторизации пользователя
 	GenerateToken(user dto.SignInRequest) (string, error)
+	// ParseToken - анализируем jwt token
+	ParseToken(token string) (int64, error)
 }
 
 // Chat - интерфейс для чатов

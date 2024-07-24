@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	tokenTTL   = 5 * time.Second
+	tokenTTL   = 30 * time.Second
 	signingKey = "qWeRtYuIoP123456789#@&*"
 )
 
@@ -87,4 +87,29 @@ func (s *AuthService) GenerateToken(user dto.SignInRequest) (string, error) {
 	}
 
 	return jwtToken, nil
+}
+
+// ParseToken - реализуем интерфейс анализа jwt token
+func (s *AuthService) ParseToken(token string) (int64, error) {
+	// Получаем token
+	jwtToken, err := jwt.ParseWithClaims(token, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method")
+		}
+
+		return []byte(signingKey), nil
+	})
+
+	// Если не смогли получить token возвращаем ошибку
+	if err != nil {
+		return 0, err
+	}
+
+	// Получаем параметры из декодированного token
+	claims, ok := jwtToken.Claims.(*tokenClaims)
+	if !ok {
+		return 0, fmt.Errorf("invalid token claims")
+	}
+
+	return claims.UserID, nil
 }
