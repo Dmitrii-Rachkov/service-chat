@@ -9,13 +9,12 @@ import (
 )
 
 const (
-	authHeader       = "Authorization"
-	errEmptyHeader   = "Authorization header is empty"
-	errInvalidAuth   = "Invalid authorization header"
-	errEmptyToken    = "Token is empty"
-	errAuthorization = "User is not authorized"
-	userCtx          = "userID"
-	bearerToken      = "Bearer"
+	authHeader     = "Authorization"
+	errEmptyHeader = "Authorization header is empty"
+	errInvalidAuth = "Invalid authorization header"
+	errEmptyToken  = "Token is empty"
+	userCtx        = "userID"
+	bearerToken    = "Bearer"
 )
 
 func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
@@ -44,7 +43,8 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 		// Получаем id пользователя из jwt token
 		userID, err := h.services.Authorization.ParseToken(headerParts[1])
 		if err != nil {
-			render.JSON(w, r, Error(errAuthorization))
+			render.JSON(w, r, Error(err.Error()))
+			return
 		}
 
 		// Добавляем в контекст id нашего пользователя для передачи в следующие handlers
