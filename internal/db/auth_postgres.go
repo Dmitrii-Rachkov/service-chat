@@ -50,3 +50,23 @@ func (r *AuthPostgres) CreateUser(user entity.User) (int, error) {
 
 	return id, nil
 }
+
+func (r *AuthPostgres) GetUser(user entity.User) (*entity.User, error) {
+	const op = "db.GetUser"
+	var userDB entity.User
+	// Скелет sql запроса в базу данных
+	stmt, err := r.db.Prepare(`SELECT id, username, password_hash FROM "user" WHERE username = $1`)
+	if err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", op, err)
+	}
+
+	// Запрос в базу на получение пользователя
+	row := stmt.QueryRow(user.Username)
+
+	// Получаем id, username, password_hash из базы данных
+	if err = row.Scan(&userDB.Id, &userDB.Username, &userDB.Password); err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", op, err)
+	}
+
+	return &userDB, nil
+}

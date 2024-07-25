@@ -11,6 +11,10 @@ import (
 type Authorization interface {
 	// CreateUser - функция для создания нового пользователя в базе и вернуть его id или ошибку
 	CreateUser(user dto.SignUpRequest) (int, error)
+	// GenerateToken - создаём токен для авторизации пользователя
+	GenerateToken(user dto.SignInRequest) (string, error)
+	// ParseToken - анализируем jwt token
+	ParseToken(token string) (int64, error)
 }
 
 // Chat - интерфейс для чатов

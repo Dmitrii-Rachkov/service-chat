@@ -58,27 +58,31 @@ func (h *Handler) NewRouter(log *slog.Logger) *chi.Mux {
 	// Регистрация и авторизация
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/sign-up", h.SignUp(log)) // POST /auth/sign-up
-		r.Post("/sign-in", h.SignIn())    // POST /auth/sign-in
+		r.Post("/sign-in", h.SignIn(log)) // POST /auth/sign-in
 	})
 
-	// Работа с сущностью пользователя
-	r.Route("/users", func(r chi.Router) {
-		r.Post("/add", h.UserAdd())         // POST /users/add
-		r.Put("/update", h.UserUpdate())    // PUT /users/update
-		r.Delete("/delete", h.UserDelete()) // DELETE /users/delete
-	})
+	// Protected Endpoints
+	r.Group(func(r chi.Router) {
+		r.Use(h.AuthMiddleware)
+		// Работа с сущностью пользователя
+		r.Route("/users", func(r chi.Router) {
+			r.Post("/add", h.UserAdd())         // POST /users/add
+			r.Put("/update", h.UserUpdate())    // PUT /users/update
+			r.Delete("/delete", h.UserDelete()) // DELETE /users/delete
+		})
 
-	// Работа с чатами
-	r.Route("/chats", func(r chi.Router) {
-		r.Post("/add", h.ChatAdd())         // POST /chats/add
-		r.Delete("/delete", h.ChatDelete()) // DELETE /chats/delete
-		r.Post("/get", h.ChatGet())         // POST /chats/get
-	})
+		// Работа с чатами
+		r.Route("/chats", func(r chi.Router) {
+			r.Post("/add", h.ChatAdd())         // POST /chats/add
+			r.Delete("/delete", h.ChatDelete()) // DELETE /chats/delete
+			r.Post("/get", h.ChatGet())         // POST /chats/get
+		})
 
-	// Работа с сообщениями
-	r.Route("/messages", func(r chi.Router) {
-		r.Post("/add", h.MessageAdd()) // POST /messages/add
-		r.Post("/get", h.MessageGet()) // POST /messages/get
+		// Работа с сообщениями
+		r.Route("/messages", func(r chi.Router) {
+			r.Post("/add", h.MessageAdd()) // POST /messages/add
+			r.Post("/get", h.MessageGet()) // POST /messages/get
+		})
 	})
 
 	return r

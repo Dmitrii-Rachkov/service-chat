@@ -3,6 +3,8 @@ package handler
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/go-chi/render"
 )
 
 // UserAdd - добавить нового пользователя
@@ -21,11 +23,14 @@ import (
 // @Router /users/add [post]
 func (h *Handler) UserAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fprintf, err := fmt.Fprintf(w, "<h1>UserAdd</h1>")
-		if err != nil {
-			return
-		}
-		_ = fprintf
+		id := r.Context().Value(userCtx)
+		render.JSON(w, r, map[string]interface{}{"id": id})
+
+		//fprintf, err := fmt.Fprintf(w, "<h1>UserAdd</h1>")
+		//if err != nil {
+		//	return
+		//}
+		//_ = fprintf
 	}
 }
 
