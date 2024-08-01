@@ -47,6 +47,8 @@ func ValidationError(errs validator.ValidationErrors) Response {
 			errMsgs = append(errMsgs, fmt.Sprintf("Field %s must contain Latin letters and Arabic numerals, as well as the symbols @#$&*()", err.Field()))
 		case "excludesall":
 			errMsgs = append(errMsgs, fmt.Sprintf("Field %s must not contain symbols !@#$&*()?", err.Field()))
+		case "number":
+			errMsgs = append(errMsgs, fmt.Sprintf("Field %s must contain only numbers", err.Field()))
 		default:
 			errMsgs = append(errMsgs, fmt.Sprintf("Field %s is not valid", err.Field()))
 		}

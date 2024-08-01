@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -50,4 +51,14 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 		// Добавляем в контекст id нашего пользователя для передачи в следующие handlers
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), userCtx, userID)))
 	})
+}
+
+func GetUserID(ctx context.Context) (int, error) {
+	// Достаём из контекста userID
+	id, ok := ctx.Value(userCtx).(int)
+	if !ok {
+		return 0, errors.New("user id not found")
+	}
+
+	return id, nil
 }

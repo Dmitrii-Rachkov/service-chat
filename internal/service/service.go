@@ -14,11 +14,13 @@ type Authorization interface {
 	// GenerateToken - создаём токен для авторизации пользователя
 	GenerateToken(user dto.SignInRequest) (string, error)
 	// ParseToken - анализируем jwt token
-	ParseToken(token string) (int64, error)
+	ParseToken(token string) (int, error)
 }
 
 // Chat - интерфейс для чатов
 type Chat interface {
+	// CreateChat - создаём чат между пользователями
+	CreateChat(in dto.ChatAdd) (int, error)
 }
 
 // Message - интерфейс для сообщений
@@ -36,5 +38,6 @@ type Service struct {
 func NewService(db *db.DB) *Service {
 	return &Service{
 		Authorization: NewAuthService(db.Authorization),
+		Chat:          NewChatService(db.Chat),
 	}
 }

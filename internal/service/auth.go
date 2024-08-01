@@ -13,14 +13,14 @@ import (
 )
 
 const (
-	tokenTTL   = 30 * time.Second
+	tokenTTL   = 60 * time.Second
 	signingKey = "qWeRtYuIoP123456789#@&*"
 )
 
 // Расширяем стандартный токен
 type tokenClaims struct {
 	jwt.RegisteredClaims
-	UserID int64 `json:"user_id"`
+	UserID int `json:"user_id"`
 }
 
 type AuthService struct {
@@ -77,7 +77,7 @@ func (s *AuthService) GenerateToken(user dto.SignInRequest) (string, error) {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenTTL)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
-		userDB.Id,
+		int(userDB.Id),
 	})
 
 	// Создаём подписанный jwt token
@@ -90,7 +90,7 @@ func (s *AuthService) GenerateToken(user dto.SignInRequest) (string, error) {
 }
 
 // ParseToken - реализуем интерфейс анализа jwt token
-func (s *AuthService) ParseToken(token string) (int64, error) {
+func (s *AuthService) ParseToken(token string) (int, error) {
 	// Получаем token
 	jwtToken, err := jwt.ParseWithClaims(token, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
