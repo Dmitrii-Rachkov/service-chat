@@ -33,10 +33,10 @@ func (c *ChatsPostgres) CreateChat(in entity.ChatAdd) (int, error) {
 
 	// Скелет sql запроса в базу данных для создания чата в таблице chat
 	stmtChat, errChat := c.db.Prepare(`INSERT INTO "chat" (name) VALUES ($1) RETURNING id`)
+	defer stmtChat.Close()
 	if errChat != nil {
 		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, errChat)
 	}
-	defer stmtChat.Close()
 
 	// Запрос на создание чата между пользователями
 	rowChat := tx.Stmt(stmtChat).QueryRow(in.ChatName)
@@ -60,10 +60,10 @@ func (c *ChatsPostgres) CreateChat(in entity.ChatAdd) (int, error) {
 
 	// Скелет sql запроса в базу данных для связи чата и пользователей в таблице users_chat
 	stmtUsersChat, errUsersChat := tx.Prepare(pq.CopyIn("users_chat", "user_id", "chat_id"))
+	defer stmtUsersChat.Close()
 	if errUsersChat != nil {
 		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, errUsersChat)
 	}
-	defer stmtUsersChat.Close()
 
 	// Запрос на связь чата с пользователями
 	for _, user := range in.Users {
