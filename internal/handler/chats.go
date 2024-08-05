@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
@@ -36,15 +37,6 @@ func (h *Handler) ChatAdd(log *slog.Logger) http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		// Получаем id пользователя из контекста
-		id, errID := GetUserID(r.Context())
-		if errID != nil {
-			log.Error("failed to get userID from context")
-			render.JSON(w, r, Error(errID.Error()))
-		}
-
-		_ = id
-
 		// Структура для записи входных данных из JSON от пользователя
 		var req dto.ChatAdd
 
@@ -62,9 +54,13 @@ func (h *Handler) ChatAdd(log *slog.Logger) http.HandlerFunc {
 
 		// Отправляем валидную структуру на слой сервиса
 		chatID, err := h.services.Chat.CreateChat(req)
-		if err != nil {
+		if err != nil && strings.Contains(err.Error(), "unique_violation") {
+			log.Error("chat already exists", logger.Err(err))
+			render.JSON(w, r, Error("Chat already exists"))
+			return
+		} else if err != nil {
 			log.Error("failed to create chat", logger.Err(err))
-			render.JSON(w, r, Error("Failed to create chat"))
+			render.JSON(w, r, Error(fmt.Sprintf("Failed to create chat: %s", err)))
 			return
 		}
 

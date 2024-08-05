@@ -22,6 +22,23 @@ func NewChatsPostgres(db *sql.DB) *ChatsPostgres {
 func (c *ChatsPostgres) CreateChat(in entity.ChatAdd) (int, error) {
 	const op = "db.CreateChat"
 	var chatID int
+	var userID int
+
+	// Скелет sql запроса для проверки существуют ли пользователи в бд
+	stmtUser, errUser := c.db.Prepare(`SELECT id FROM "user" WHERE id = $1`)
+	if errUser != nil {
+		return 0, fmt.Errorf("error path: %s, error: %w", op, errUser)
+	}
+
+	// Запрос в базу на получение пользователя
+	for _, id := range in.Users {
+		errRow := stmtUser.QueryRow(id).Scan(&userID)
+		if errRow != nil && errors.Is(errRow, sql.ErrNoRows) {
+			return 0, fmt.Errorf("error path: %s, error: user with id %d not found", op, id)
+		} else if errRow != nil {
+			return 0, fmt.Errorf("error path: %s, error: %s", op, errRow)
+		}
+	}
 
 	// Запускаем транзакцию
 	tx, err := c.db.Begin()
@@ -57,24 +74,47 @@ func (c *ChatsPostgres) CreateChat(in entity.ChatAdd) (int, error) {
 	}
 
 	// Скелет sql запроса в базу данных для связи чата и пользователей в таблице users_chat
-	stmtUsersChat, errUsersChat := c.db.Prepare(`INSERT INTO "users_chat" (user_id, chat_id) VALUES ($1, $2)`)
+	stmtUsersChat, errUsersChat := tx.Prepare(pq.CopyIn("users_chat", "user_id", "chat_id"))
 	if errUsersChat != nil {
 		return 0, fmt.Errorf("error path: %s, error: %w", op, errUsersChat)
 	}
 
 	// Запрос на связь чата с пользователями
 	for _, user := range in.Users {
-		_, errExec := tx.Stmt(stmtUsersChat).Exec(user, chatID)
-		if errExec != nil {
+		_, err = stmtUsersChat.Exec(user, chatID)
+		if err != nil {
 			// Откатываем транзакцию в случае ошибки
 			errTx := tx.Rollback()
 			if errTx != nil {
 				return 0, fmt.Errorf("error path: %s, error: %s", op, errTx)
 			}
-			return 0, fmt.Errorf("error path: %s, error: %w", op, errExec)
+			// Возвращаем ошибку
+			return 0, fmt.Errorf("error path: %s, error: %w", op, err)
 		}
 	}
 
-	// Возвращаем id chat
+	// Очищаем все буферизованные данные
+	_, err = stmtUsersChat.Exec()
+	if err != nil {
+		return 0, fmt.Errorf("error path: %s, error: %w", op, err)
+	}
+
+	// Закрываем все statement
+	err = stmtUser.Close()
+	if err != nil {
+		return 0, fmt.Errorf("error path: %s, error: %w", op, err)
+	}
+
+	err = stmtChat.Close()
+	if err != nil {
+		return 0, fmt.Errorf("error path: %s, error: %w", op, err)
+	}
+
+	err = stmtUsersChat.Close()
+	if err != nil {
+		return 0, fmt.Errorf("error path: %s, error: %w", op, err)
+	}
+
+	// Возвращаем id chat и завершаем транзакцию
 	return chatID, tx.Commit()
 }
