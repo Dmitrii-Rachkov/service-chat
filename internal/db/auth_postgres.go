@@ -10,10 +10,6 @@ import (
 	"service-chat/internal/db/entity"
 )
 
-const (
-	errCodeUnique = "23505"
-)
-
 type AuthPostgres struct {
 	db *sql.DB
 }

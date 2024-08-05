@@ -16,6 +16,7 @@ type Authorization interface {
 
 // Chat - интерфейс для чатов
 type Chat interface {
+	CreateChat(in entity.ChatAdd) (int, error)
 }
 
 // Message - интерфейс для сообщений
@@ -33,5 +34,6 @@ type DB struct {
 func NewDB(db *sql.DB) *DB {
 	return &DB{
 		Authorization: NewAuthPostgres(db),
+		Chat:          NewChatsPostgres(db),
 	}
 }
