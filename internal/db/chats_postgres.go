@@ -36,6 +36,7 @@ func (c *ChatsPostgres) CreateChat(in entity.ChatAdd) (int, error) {
 	if errChat != nil {
 		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, errChat)
 	}
+	defer stmtChat.Close()
 
 	// Запрос на создание чата между пользователями
 	rowChat := tx.Stmt(stmtChat).QueryRow(in.ChatName)
@@ -62,6 +63,7 @@ func (c *ChatsPostgres) CreateChat(in entity.ChatAdd) (int, error) {
 	if errUsersChat != nil {
 		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, errUsersChat)
 	}
+	defer stmtUsersChat.Close()
 
 	// Запрос на связь чата с пользователями
 	for _, user := range in.Users {
@@ -79,17 +81,6 @@ func (c *ChatsPostgres) CreateChat(in entity.ChatAdd) (int, error) {
 
 	// Очищаем все буферизованные данные
 	_, err = stmtUsersChat.Exec()
-	if err != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, err)
-	}
-
-	// Закрываем все statement
-	err = stmtChat.Close()
-	if err != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, err)
-	}
-
-	err = stmtUsersChat.Close()
 	if err != nil {
 		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, err)
 	}
