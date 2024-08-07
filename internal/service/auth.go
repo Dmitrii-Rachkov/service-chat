@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	tokenTTL   = 60 * time.Second
+	tokenTTL   = 2 * time.Minute
 	signingKey = "qWeRtYuIoP123456789#@&*"
 )
 

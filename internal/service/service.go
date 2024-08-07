@@ -25,6 +25,8 @@ type Chat interface {
 
 // Message - интерфейс для сообщений
 type Message interface {
+	// AddMessage - отправить сообщение в чат от лица пользователя
+	AddMessage(in dto.MessageAdd) (int, error)
 }
 
 // Service - собирает все наши интерфейсы в одном месте
@@ -39,5 +41,6 @@ func NewService(db *db.DB) *Service {
 	return &Service{
 		Authorization: NewAuthService(db.Authorization),
 		Chat:          NewChatService(db.Chat),
+		Message:       NewMessageService(db.Message),
 	}
 }
