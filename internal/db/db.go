@@ -21,6 +21,7 @@ type Chat interface {
 
 // Message - интерфейс для сообщений
 type Message interface {
+	AddMessage(in entity.MessageAdd) (int, error)
 }
 
 // DB - собирает все наши интерфейсы в одном месте
@@ -35,5 +36,6 @@ func NewDB(db *sql.DB) *DB {
 	return &DB{
 		Authorization: NewAuthPostgres(db),
 		Chat:          NewChatsPostgres(db),
+		Message:       NewMessagePostgres(db),
 	}
 }

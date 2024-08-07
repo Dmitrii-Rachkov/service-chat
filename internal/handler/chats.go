@@ -23,7 +23,7 @@ import (
 // @Accept json
 // @Produce json
 // @Param input body dto.ChatAdd true "chat info"
-// @Success 200 {integer} Response
+// @Success 200 {object} Response
 // @Failure 400,404,405 {object} Response
 // @Failure 500 {object} Response
 // @Failure default {object} Response
