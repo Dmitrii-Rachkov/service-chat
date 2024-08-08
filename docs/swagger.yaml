@@ -1,5 +1,45 @@
 basePath: /
 definitions:
+  dto.ChatAdd:
+    properties:
+      chat_name:
+        maxLength: 20
+        minLength: 6
+        type: string
+      users:
+        items:
+          type: integer
+        type: array
+    required:
+    - chat_name
+    - users
+    type: object
+  dto.MessageAdd:
+    properties:
+      chat_id:
+        type: integer
+      text:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - chat_id
+    - text
+    - user_id
+    type: object
+  dto.MessageUpdate:
+    properties:
+      message_id:
+        type: integer
+      new_text:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - message_id
+    - new_text
+    - user_id
+    type: object
   dto.SignInRequest:
     properties:
       password:
@@ -181,20 +221,24 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/entity.Chat'
+          $ref: '#/definitions/dto.ChatAdd'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: integer
+            $ref: '#/definitions/handler.Response'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "405":
+          description: Method Not Allowed
           schema:
             $ref: '#/definitions/handler.Response'
         "500":
@@ -304,20 +348,24 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/entity.Message'
+          $ref: '#/definitions/dto.MessageAdd'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: integer
+            $ref: '#/definitions/handler.Response'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "405":
+          description: Method Not Allowed
           schema:
             $ref: '#/definitions/handler.Response'
         "500":
@@ -372,6 +420,51 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: MessageGet
+      tags:
+      - Message
+  /messages/update:
+    put:
+      consumes:
+      - application/json
+      description: Update message
+      operationId: Update message
+      parameters:
+      - description: message info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MessageUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "405":
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: MessageUpdate
       tags:
       - Message
   /users/add:
