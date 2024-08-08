@@ -14,3 +14,10 @@ type MessageAdd struct {
 	UserID int64  `json:"userID"`
 	Text   string `json:"text"`
 }
+
+// MessageUpdate - сущность для редактирования сообщения от лица пользователя
+type MessageUpdate struct {
+	MessageID int64  `json:"messageID"`
+	UserID    int64  `json:"userID"`
+	NewText   string `json:"newText"`
+}

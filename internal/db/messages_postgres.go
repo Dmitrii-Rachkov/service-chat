@@ -3,11 +3,15 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"service-chat/internal/db/entity"
 )
 
-const opMessageAdd = "db.AddMessage"
+const (
+	opMessageAdd    = "db.AddMessage"
+	opMessageUpdate = "db.UpdateMessage"
+)
 
 type MessagePostgres struct {
 	db *sql.DB
@@ -74,4 +78,28 @@ func (m *MessagePostgres) AddMessage(in entity.MessageAdd) (int, error) {
 	}
 
 	return messageID, tx.Commit()
+}
+
+// UpdateMessage - редактируем сообщение от пользователя в бд и возвращаем message id
+func (m *MessagePostgres) UpdateMessage(in entity.MessageUpdate) (int, error) {
+	var messageID int
+
+	// Обновляю время создания для нового сообщения
+	timeNow := time.Now()
+
+	// Скелет sql запроса на редактирование сообщения в бд
+	stmt, err := m.db.Prepare(`UPDATE "message" SET text = $1, created_at = $2 WHERE id = $3 RETURNING id`)
+	if err != nil {
+		return 0, fmt.Errorf("error path: %s, error: %w", opMessageUpdate, err)
+	}
+	defer stmt.Close()
+
+	// Редактируем сообщение от пользователя в бд
+	if row := stmt.QueryRow(in.NewText, timeNow, in.MessageID).Scan(&messageID); row != nil && row.Error() == errNoRows {
+		return 0, fmt.Errorf("error path: %s, error: %s", opMessageUpdate, "Invalid message_id")
+	} else if row != nil {
+		return 0, fmt.Errorf("error path: %s, error: %w", opMessageUpdate, row)
+	}
+
+	return messageID, nil
 }
