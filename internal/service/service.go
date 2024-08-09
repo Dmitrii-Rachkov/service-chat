@@ -27,6 +27,7 @@ type Chat interface {
 type Message interface {
 	// AddMessage - отправить сообщение в чат от лица пользователя
 	AddMessage(in dto.MessageAdd) (int, error)
+	UpdateMessage(in dto.MessageUpdate) (int, error)
 }
 
 // Service - собирает все наши интерфейсы в одном месте
