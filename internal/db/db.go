@@ -23,6 +23,7 @@ type Chat interface {
 type Message interface {
 	AddMessage(in entity.MessageAdd) (int, error)
 	UpdateMessage(in entity.MessageUpdate) (int, error)
+	GetMessage(in entity.MessageGet) ([]entity.Message, error)
 }
 
 // DB - собирает все наши интерфейсы в одном месте

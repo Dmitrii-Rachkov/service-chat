@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+
+	"service-chat/internal/db/entity"
 )
 
 const (
@@ -13,9 +15,10 @@ const (
 )
 
 type Response struct {
-	Status  string `json:"status"`
-	Error   string `json:"error,omitempty"`
-	Message string `json:"message,omitempty"`
+	Status       string           `json:"status"`
+	Error        string           `json:"error,omitempty"`
+	Message      string           `json:"message,omitempty"`
+	MessagesList []entity.Message `json:"messages_list,omitempty"`
 }
 
 func OK(msg string) Response {

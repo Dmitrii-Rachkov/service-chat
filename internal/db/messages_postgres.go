@@ -2,7 +2,10 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+
+	"github.com/lib/pq"
 
 	"service-chat/internal/db/entity"
 )
@@ -10,6 +13,7 @@ import (
 const (
 	opMessageAdd    = "db.AddMessage"
 	opMessageUpdate = "db.UpdateMessage"
+	opMessageGet    = "db.GetMessage"
 )
 
 type MessagePostgres struct {
@@ -98,4 +102,102 @@ func (m *MessagePostgres) UpdateMessage(in entity.MessageUpdate) (int, error) {
 	}
 
 	return messageID, nil
+}
+
+// GetMessage - получаем список сообщений в конкретном чате из бд
+func (m *MessagePostgres) GetMessage(in entity.MessageGet) ([]entity.Message, error) {
+	// Пользователь может достать сообщения из чата, только если он состоит в чате,
+	// для этого нужно SELECT из таблицы users_chat, где chat_id = in.ChatID,
+	// получаем users_chat_id (несколько) и user_id (несколько), которые в этом чате состоят
+
+	// Скелет sql запроса на получение users_chat_id и user_id из конкретного чата
+	stmtUsersChat, err := m.db.Prepare(`SELECT id, user_id FROM "users_chat" WHERE chat_id = $1`)
+	if err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, err)
+	}
+	defer stmtUsersChat.Close()
+
+	// Получаем users_chat_id и user_id из бд
+	rowsUc, err := stmtUsersChat.Query(in.ChatID)
+	if err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, err)
+	}
+	defer rowsUc.Close()
+
+	// Кладём строки из бд в структуру
+	type usersChat struct {
+		usersChatID []int `db:"id"`
+		userID      []int `db:"user_id"`
+	}
+	var uc usersChat
+	for rowsUc.Next() {
+		var usersChatID, userID int
+		if errSc := rowsUc.Scan(&usersChatID, &userID); errSc != nil {
+			return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, errSc)
+		}
+		uc.usersChatID = append(uc.usersChatID, usersChatID)
+		uc.userID = append(uc.userID, userID)
+	}
+
+	// В конце проверяем строки на ошибки (best practice)
+	if err = rowsUc.Err(); err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, err)
+	}
+
+	// Проверяем, что пользователь, который запрашивает сообщения, есть в чате
+	// Пользователь не может запрашивать сообщения из чата, если он в нём не состоит
+	var checkUser bool
+	for _, id := range uc.userID {
+		if id == in.UserID {
+			checkUser = true
+			break
+		}
+	}
+	if !checkUser {
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet,
+			errors.New(fmt.Sprintf("User with userID %d does not exist in chatID %d", in.UserID, in.ChatID)))
+	}
+
+	// Далее по users_chat_id (несколько) берём все messageID из таблицы chats_messages,
+	// и забираем все сообщения из message
+
+	// Скелет sql запроса на получение всех сообщений в конкретном чате
+	stmtMsg, err := m.db.Prepare(`WITH cm AS (
+											SELECT message_id
+											FROM chats_messages
+											WHERE users_chat_id = ANY ($1)
+											)
+										SELECT *
+										FROM message
+										WHERE id IN (SELECT message_id FROM cm)
+										ORDER BY created_at
+										LIMIT $2 OFFSET $3`)
+	if err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, err)
+	}
+	defer stmtMsg.Close()
+
+	// Получаем сообщения из бд
+	rowsMsg, err := stmtMsg.Query(pq.Array(uc.usersChatID), in.Limit, in.Offset)
+	if err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, err)
+	}
+	defer rowsMsg.Close()
+
+	// Структура для записи всех полученных сообщений из бд
+	var messages []entity.Message
+	for rowsMsg.Next() {
+		var msg entity.Message
+		if errSc := rowsMsg.Scan(&msg.Id, &msg.Text, &msg.UserID, &msg.CreatedAt, &msg.IsDeleted); errSc != nil {
+			return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, errSc)
+		}
+		messages = append(messages, msg)
+	}
+
+	// В конце проверяем строки на ошибки (best practice)
+	if err = rowsMsg.Err(); err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, err)
+	}
+
+	return messages, nil
 }

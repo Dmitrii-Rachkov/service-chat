@@ -67,42 +67,8 @@ func main() {
 	}
 	log.Info("Server started")
 
-	// connect to the DB (example)
-	//database, errDB := db.Conn(cfg.Database.Host, cfg.Database.Port, cfg.Database.Username,
-	//	cfg.Database.Password, cfg.Database.Name, cfg.Database.Connections)
-	//_ = database
-	//if errDB != nil {
-	//	log.Error("Failed to start database, error:", errDB.Error())
-	//}
-	//
-	//http.HandleFunc("/db", func(w http.ResponseWriter, r *http.Request) {
-	//	fmt.Fprintf(w, "<h1>%s</h1>", cfg.Greeting)
-	//})
-	//
-	//http.ListenAndServe(":"+cfg.Server.Port, nil)
-
-	// Тестовый handler
-	//http.HandleFunc("/docker", func(writer http.ResponseWriter, request *http.Request) {
-	//	fprintf, err := fmt.Fprintf(writer, "<h1>Hello from Docker container!</h1>")
-	//	if err != nil {
-	//		return
-	//	}
-	//	_ = fprintf
-	//})
-	//
-	//err := http.ListenAndServe(":"+cfg.Server.Port, nil)
-	//if err != nil {
-	//	return
-	//}
-
-	// TODO: handler sign-up и sign-in
-	// реализуем handlers для регистрации и авторизации с помощью JWT
-
 	// TODO: handlers for work service
 	// реализуем все остальные handlers для работы основной логики сервиса
-
-	// TODO: schema swagger
-	// делаем свагер схему
 
 	// TODO: tests
 	// делаем unit тесты

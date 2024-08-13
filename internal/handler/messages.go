@@ -88,19 +88,58 @@ func (h *Handler) MessageAdd(log *slog.Logger) http.HandlerFunc {
 // @ID Get message
 // @Accept json
 // @Produce json
-// @Param input body entity.Message true "message info"
-// @Success 200 {integer} integer 1
-// @Failure 400,404 {object} Response
+// @Param input body dto.MessageGet true "message info"
+// @Success 200 {object} Response{Status, Message, MessagesList}
+// @Failure 400,404,405 {object} Response
 // @Failure 500 {object} Response
 // @Failure default {object} Response
 // @Router /messages/get [post]
-func (h *Handler) MessageGet() http.HandlerFunc {
+func (h *Handler) MessageGet(log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fprintf, err := fmt.Fprintf(w, "<h1>MessageGet</h1>")
-		if err != nil {
+		// Логируем наш запрос
+		const op = "handler.MessageGet"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+
+		// Получаем id пользователя из контекста
+		idCtx, errCtx := GetUserID(r.Context())
+		if errCtx != nil {
+			log.Error("failed to get userID from context")
+			render.JSON(w, r, Error(errCtx.Error()))
+		}
+
+		// Структура для записи входных данных из JSON от пользователя
+		var req dto.MessageGet
+
+		// Анализируем запрос от пользователя
+		fail := validate.BaseValidate(log, r.Body, &req)
+		if fail != nil && fail.ValidateErr != nil {
+			log.Error("invalid request data")
+			render.JSON(w, r, ValidationError(fail.ValidateErr))
+			return
+		} else if fail != nil && fail.ErrMsg != "" {
+			log.Error("invalid request data")
+			render.JSON(w, r, Error(fail.ErrMsg))
 			return
 		}
-		_ = fprintf
+
+		// Отправляем валидную структуру на слой сервиса
+		messages, errMsg := h.services.Message.GetMessage(req, idCtx)
+		if errMsg != nil {
+			log.Error("failed to get messages", logger.Err(errMsg))
+			render.JSON(w, r, Error(fmt.Sprintf("Failed to get messages: %s", errMsg)))
+			return
+		}
+
+		// Если ошибок нет отправляем успешный ответ
+		log.Info("Message get successfully", "Messages", messages)
+		render.JSON(w, r, Response{
+			Status:       StatusOK,
+			Message:      "Message get successfully",
+			MessagesList: messages},
+		)
 	}
 }
 

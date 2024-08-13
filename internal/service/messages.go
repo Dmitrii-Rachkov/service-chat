@@ -33,3 +33,14 @@ func (ms *MessageService) UpdateMessage(in dto.MessageUpdate) (int, error) {
 	}
 	return ms.repo.UpdateMessage(dataDB)
 }
+
+// GetMessage - получение списка сообщений из конкретного чата
+func (ms *MessageService) GetMessage(in dto.MessageGet, userID int) ([]entity.Message, error) {
+	dataDB := entity.MessageGet{
+		ChatID: in.ChatID,
+		Limit:  *in.Limit,
+		Offset: *in.Offset,
+		UserID: userID,
+	}
+	return ms.repo.GetMessage(dataDB)
+}

@@ -81,7 +81,7 @@ func (h *Handler) NewRouter(log *slog.Logger) *chi.Mux {
 		// Работа с сообщениями
 		r.Route("/messages", func(r chi.Router) {
 			r.Post("/add", h.MessageAdd(log))      // POST /messages/add
-			r.Post("/get", h.MessageGet())         // POST /messages/get
+			r.Post("/get", h.MessageGet(log))      // POST /messages/get
 			r.Put("/update", h.MessageUpdate(log)) // PUT /messages/update
 		})
 	})

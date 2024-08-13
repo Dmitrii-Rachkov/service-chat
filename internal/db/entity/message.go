@@ -2,10 +2,11 @@ package entity
 
 // Message - сущность для работы с сообщениями
 type Message struct {
-	Id        int64  `json:"id"`
-	Text      string `json:"text"`
-	CreatedAt string `json:"createdAt"`
-	IsDeleted bool   `json:"isDeleted"`
+	Id        int64  `json:"id" db:"id"`
+	Text      string `json:"text" db:"text"`
+	UserID    int64  `json:"user_id" db:"user_id"`
+	CreatedAt string `json:"created_at" db:"created_at"`
+	IsDeleted bool   `json:"is_deleted" db:"is_deleted"`
 }
 
 // MessageAdd - сущность для отправки сообщения в чат от лица пользователя
@@ -20,4 +21,12 @@ type MessageUpdate struct {
 	MessageID int64  `json:"messageID"`
 	UserID    int64  `json:"userID"`
 	NewText   string `json:"newText"`
+}
+
+// MessageGet - сущность для получения списка сообщений в конкретном чате
+type MessageGet struct {
+	ChatID int64 `json:"chatID"`
+	Limit  int64 `json:"limit"`
+	Offset int64 `json:"offset"`
+	UserID int   `json:"userID"`
 }

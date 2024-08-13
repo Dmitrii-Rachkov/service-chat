@@ -27,6 +27,19 @@ definitions:
     - text
     - user_id
     type: object
+  dto.MessageGet:
+    properties:
+      chat_id:
+        type: integer
+      limit:
+        type: integer
+      offset:
+        type: integer
+    required:
+    - chat_id
+    - limit
+    - offset
+    type: object
   dto.MessageUpdate:
     properties:
       message_id:
@@ -79,14 +92,16 @@ definitions:
     type: object
   entity.Message:
     properties:
-      createdAt:
+      created_at:
         type: string
       id:
         type: integer
-      isDeleted:
+      is_deleted:
         type: boolean
       text:
         type: string
+      user_id:
+        type: integer
     type: object
   entity.User:
     properties:
@@ -113,6 +128,10 @@ definitions:
         type: string
       message:
         type: string
+      messages_list:
+        items:
+          $ref: '#/definitions/entity.Message'
+        type: array
       status:
         type: string
     type: object
@@ -393,20 +412,24 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/entity.Message'
+          $ref: '#/definitions/dto.MessageGet'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: integer
+            $ref: '#/definitions/handler.Response'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "405":
+          description: Method Not Allowed
           schema:
             $ref: '#/definitions/handler.Response'
         "500":
