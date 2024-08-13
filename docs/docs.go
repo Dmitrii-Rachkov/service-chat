@@ -439,7 +439,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.Message"
+                            "$ref": "#/definitions/dto.MessageGet"
                         }
                     }
                 ],
@@ -447,7 +447,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "integer"
+                            "$ref": "#/definitions/handler.Response"
                         }
                     },
                     "400": {
@@ -458,6 +458,12 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
+                        }
+                    },
+                    "405": {
+                        "description": "Method Not Allowed",
                         "schema": {
                             "$ref": "#/definitions/handler.Response"
                         }
@@ -780,6 +786,25 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.MessageGet": {
+            "type": "object",
+            "required": [
+                "chat_id",
+                "limit",
+                "offset"
+            ],
+            "properties": {
+                "chat_id": {
+                    "type": "integer"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.MessageUpdate": {
             "type": "object",
             "required": [
@@ -855,17 +880,20 @@ const docTemplate = `{
         "entity.Message": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "isDeleted": {
+                "is_deleted": {
                     "type": "boolean"
                 },
                 "text": {
                     "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -904,6 +932,12 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                },
+                "messages_list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Message"
+                    }
                 },
                 "status": {
                     "type": "string"
