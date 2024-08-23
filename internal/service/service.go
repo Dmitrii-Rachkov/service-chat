@@ -22,13 +22,17 @@ type Authorization interface {
 type Chat interface {
 	// CreateChat - создаём чат между пользователями
 	CreateChat(in dto.ChatAdd) (int, error)
+	// GetChat - получение чатов пользователя
+	GetChat(in dto.ChatGet) ([]entity.Chat, error)
 }
 
 // Message - интерфейс для сообщений
 type Message interface {
 	// AddMessage - отправить сообщение в чат от лица пользователя
 	AddMessage(in dto.MessageAdd) (int, error)
+	// UpdateMessage - обновить сообщение пользователя
 	UpdateMessage(in dto.MessageUpdate) (int, error)
+	// GetMessage - получить список всех сообщений в конкретном чате
 	GetMessage(in dto.MessageGet, userID int) ([]entity.Message, error)
 }
 

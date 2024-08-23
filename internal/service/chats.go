@@ -22,3 +22,11 @@ func (s *ChatService) CreateChat(in dto.ChatAdd) (int, error) {
 	}
 	return s.repo.CreateChat(dataDB)
 }
+
+// GetChat - получаем список чатов пользователя
+func (s *ChatService) GetChat(in dto.ChatGet) ([]entity.Chat, error) {
+	dataDB := entity.ChatGet{
+		UserID: *in.UserID,
+	}
+	return s.repo.GetChat(dataDB)
+}
