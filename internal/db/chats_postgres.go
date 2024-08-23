@@ -101,40 +101,19 @@ func (c *ChatsPostgres) GetChat(in entity.ChatGet) ([]entity.Chat, error) {
 
 	// Если в одних чатах есть сообщения, а в других нет, то сначала выводим чаты с сообщениями, сортируя от [Z-A],
 	// затем выводим пустые чаты с сортировкой по дате создания чата от [Z-A]
-	stmtChats, err := c.db.Prepare(`WITH users_chat_ids AS (
-												SELECT id
-												FROM users_chat
-												WHERE user_id = $1
-											), chat_ids AS (
-												SELECT chat_id
-												FROM users_chat
-												WHERE user_id = $1
-											), with_messages AS (
-												SELECT c.id, c.name, c.created_at, c.is_deleted
-												FROM (
-														 SELECT DISTINCT ON (users_chat_id) users_chat_id, message_id
-														 FROM chats_messages
-														 WHERE users_chat_id IN (SELECT id FROM users_chat_ids)
-														 ORDER BY users_chat_id, message_id DESC
-													 ) AS ls
-												LEFT JOIN users_chat AS uc
-												ON ls.users_chat_id = uc.id
-												LEFT JOIN chat AS c
-												ON uc.chat_id = c.id
-												ORDER BY message_id DESC
-											), no_message AS (
-												SELECT *
-												FROM chat
-												WHERE id IN (SELECT chat_id FROM chat_ids)
-												AND id NOT IN (SELECT id FROM with_messages)
-												ORDER BY created_at DESC
+	stmtChats, err := c.db.Prepare(`WITH sort_chat AS (
+												SELECT uc.chat_id, MAX(cm.message_id) AS mm, c.id, c.name, c.created_at, c.is_deleted
+												FROM users_chat AS uc
+												LEFT OUTER JOIN chats_messages AS cm
+												ON uc.id = cm.users_chat_id
+												RIGHT JOIN chat AS c
+												ON c.id = uc.chat_id
+												WHERE uc.user_id = $1
+												GROUP BY uc.chat_id, c.id
+												ORDER BY mm DESC NULLS LAST, uc.chat_id DESC
 											)
-											SELECT *
-											FROM with_messages
-											UNION ALL
-											SELECT *
-											FROM no_message
-`)
+											SELECT sort_chat.id AS id, sort_chat.name, sort_chat.created_at, sort_chat.is_deleted
+											FROM sort_chat`)
 
 	if err != nil {
 		return nil, fmt.Errorf("error path: %s, error: %w", opGetChat, err)
