@@ -102,18 +102,74 @@ func (h *Handler) ChatDelete() http.HandlerFunc {
 // @ID Get chat
 // @Accept json
 // @Produce json
-// @Param input body entity.Chat true "chat info"
-// @Success 200 {integer} integer 1
-// @Failure 400,404 {object} Response
+// @Param input body dto.ChatGet true "chat info"
+// @Success 200 {object} Response
+// @Failure 400,404,405 {object} Response
 // @Failure 500 {object} Response
 // @Failure default {object} Response
 // @Router /chats/get [post]
-func (h *Handler) ChatGet() http.HandlerFunc {
+func (h *Handler) ChatGet(log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fprintf, err := fmt.Fprintf(w, "<h1>ChatGet</h1>")
-		if err != nil {
+		// Логируем наш запрос
+		const op = "handler.ChatGet"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+
+		// Получаем id пользователя из контекста
+		idCtx, errCtx := GetUserID(r.Context())
+		if errCtx != nil {
+			log.Error("failed to get userID from context")
+			render.JSON(w, r, Error(errCtx.Error()))
 			return
 		}
-		_ = fprintf
+
+		// Структура для записи входных данных из JSON от пользователя
+		var req dto.ChatGet
+
+		// Анализируем запрос от пользователя
+		fail := validate.BaseValidate(log, r.Body, &req)
+		if fail != nil && fail.ValidateErr != nil {
+			log.Error("invalid request data")
+			render.JSON(w, r, ValidationError(fail.ValidateErr))
+			return
+		} else if fail != nil && fail.ErrMsg != "" {
+			log.Error("invalid request data")
+			render.JSON(w, r, Error(fail.ErrMsg))
+			return
+		}
+
+		// Проверяем, что id из контекста совпадает с id из запроса
+		if int64(idCtx) != *req.UserID {
+			log.Error("invalid user ID")
+			render.JSON(w, r, Error("Invalid user ID"))
+			return
+		}
+
+		// Отправляем валидную структуру на слой сервиса
+		chats, errMsg := h.services.Chat.GetChat(req)
+		if errMsg != nil {
+			log.Error("failed to get chats", logger.Err(errMsg))
+			render.JSON(w, r, Error(fmt.Sprintf("Failed to get chats: %s", errMsg)))
+			return
+		}
+
+		// Если у пользователя нет чатов
+		if len(chats) == 0 {
+			log.Info("user don't have chats")
+			render.JSON(w, r, OK("User has no chats"))
+			return
+		} else {
+			// Если ошибок нет и есть чаты отправляем успешный ответ
+			log.Info("Chats get successfully", "Chats", chats)
+			render.JSON(w, r, Response{
+				Status:    StatusOK,
+				Message:   "Chats get successfully",
+				ChatsList: chats,
+			},
+			)
+			return
+		}
 	}
 }

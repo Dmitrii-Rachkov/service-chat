@@ -305,7 +305,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.Chat"
+                            "$ref": "#/definitions/dto.ChatGet"
                         }
                     }
                 ],
@@ -313,7 +313,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "integer"
+                            "$ref": "#/definitions/handler.Response"
                         }
                     },
                     "400": {
@@ -324,6 +324,12 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
+                        }
+                    },
+                    "405": {
+                        "description": "Method Not Allowed",
                         "schema": {
                             "$ref": "#/definitions/handler.Response"
                         }
@@ -767,6 +773,17 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ChatGet": {
+            "type": "object",
+            "required": [
+                "user_id"
+            ],
+            "properties": {
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.MessageAdd": {
             "type": "object",
             "required": [
@@ -863,13 +880,13 @@ const docTemplate = `{
         "entity.Chat": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "isDeleted": {
+                "is_deleted": {
                     "type": "boolean"
                 },
                 "name": {
@@ -927,6 +944,12 @@ const docTemplate = `{
         "handler.Response": {
             "type": "object",
             "properties": {
+                "chats_list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Chat"
+                    }
+                },
                 "error": {
                     "type": "string"
                 },

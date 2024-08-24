@@ -108,6 +108,7 @@ func (h *Handler) MessageGet(log *slog.Logger) http.HandlerFunc {
 		if errCtx != nil {
 			log.Error("failed to get userID from context")
 			render.JSON(w, r, Error(errCtx.Error()))
+			return
 		}
 
 		// Структура для записи входных данных из JSON от пользователя
@@ -133,13 +134,21 @@ func (h *Handler) MessageGet(log *slog.Logger) http.HandlerFunc {
 			return
 		}
 
-		// Если ошибок нет отправляем успешный ответ
-		log.Info("Message get successfully", "Messages", messages)
-		render.JSON(w, r, Response{
-			Status:       StatusOK,
-			Message:      "Message get successfully",
-			MessagesList: messages},
-		)
+		// Если в чате нет сообщений
+		if len(messages) == 0 {
+			log.Info("user don't have messages")
+			render.JSON(w, r, OK(fmt.Sprintf("User has no messages in chat with id: %d", req.ChatID)))
+			return
+		} else {
+			// Если ошибок нет и есть сообщения отправляем успешный ответ
+			log.Info("Message get successfully", "Messages", messages)
+			render.JSON(w, r, Response{
+				Status:       StatusOK,
+				Message:      "Message get successfully",
+				MessagesList: messages},
+			)
+			return
+		}
 	}
 }
 

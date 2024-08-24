@@ -14,6 +14,13 @@ definitions:
     - chat_name
     - users
     type: object
+  dto.ChatGet:
+    properties:
+      user_id:
+        type: integer
+    required:
+    - user_id
+    type: object
   dto.MessageAdd:
     properties:
       chat_id:
@@ -81,11 +88,11 @@ definitions:
     type: object
   entity.Chat:
     properties:
-      createdAt:
+      created_at:
         type: string
       id:
         type: integer
-      isDeleted:
+      is_deleted:
         type: boolean
       name:
         type: string
@@ -124,6 +131,10 @@ definitions:
     type: object
   handler.Response:
     properties:
+      chats_list:
+        items:
+          $ref: '#/definitions/entity.Chat'
+        type: array
       error:
         type: string
       message:
@@ -326,20 +337,24 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/entity.Chat'
+          $ref: '#/definitions/dto.ChatGet'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: integer
+            $ref: '#/definitions/handler.Response'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/handler.Response'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "405":
+          description: Method Not Allowed
           schema:
             $ref: '#/definitions/handler.Response'
         "500":

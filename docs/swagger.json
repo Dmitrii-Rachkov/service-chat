@@ -299,7 +299,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.Chat"
+                            "$ref": "#/definitions/dto.ChatGet"
                         }
                     }
                 ],
@@ -307,7 +307,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "integer"
+                            "$ref": "#/definitions/handler.Response"
                         }
                     },
                     "400": {
@@ -318,6 +318,12 @@
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
+                        }
+                    },
+                    "405": {
+                        "description": "Method Not Allowed",
                         "schema": {
                             "$ref": "#/definitions/handler.Response"
                         }
@@ -761,6 +767,17 @@
                 }
             }
         },
+        "dto.ChatGet": {
+            "type": "object",
+            "required": [
+                "user_id"
+            ],
+            "properties": {
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.MessageAdd": {
             "type": "object",
             "required": [
@@ -857,13 +874,13 @@
         "entity.Chat": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "isDeleted": {
+                "is_deleted": {
                     "type": "boolean"
                 },
                 "name": {
@@ -921,6 +938,12 @@
         "handler.Response": {
             "type": "object",
             "properties": {
+                "chats_list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Chat"
+                    }
+                },
                 "error": {
                     "type": "string"
                 },
