@@ -13,6 +13,7 @@ import (
 const (
 	opCreateChat = "db.CreateChat"
 	opGetChat    = "db.GetChat"
+	opDeleteChat = "db.DeleteChat"
 )
 
 type ChatsPostgres struct {
@@ -143,4 +144,38 @@ func (c *ChatsPostgres) GetChat(in entity.ChatGet) ([]entity.Chat, error) {
 	}
 
 	return chats, nil
+}
+
+// DeleteChat - soft удаление чатов из бд
+func (c *ChatsPostgres) DeleteChat(in entity.ChatDelete) ([]entity.DeletedChats, error) {
+	// Скелет sql запроса на soft удаление чатов из бд для конкретного пользователя
+	stmtDeleteChat, err := c.db.Prepare(`SELECT * FROM delete_chat($1, VARIADIC $2::integer[])`)
+	if err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", opDeleteChat, err)
+	}
+	defer stmtDeleteChat.Close()
+
+	// Получаем информацию по результатам soft удаления чатов из бд
+	rowsDeleted, err := stmtDeleteChat.Query(in.UserID, pq.Array(in.ChatIds))
+	if err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", opDeleteChat, err)
+	}
+	defer rowsDeleted.Close()
+
+	// Структура для записи результата soft удаления чатов из бд
+	var deletedChats []entity.DeletedChats
+	for rowsDeleted.Next() {
+		var dc entity.DeletedChats
+		if errDel := rowsDeleted.Scan(&dc.ChatID, &dc.Result); errDel != nil {
+			return nil, fmt.Errorf("error path: %s, error: %w", opDeleteChat, errDel)
+		}
+		deletedChats = append(deletedChats, dc)
+	}
+
+	// В конце проверяем строки на ошибки (best practice)
+	if err = rowsDeleted.Err(); err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", opDeleteChat, err)
+	}
+
+	return deletedChats, nil
 }

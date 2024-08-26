@@ -73,9 +73,9 @@ func (h *Handler) NewRouter(log *slog.Logger) *chi.Mux {
 
 		// Работа с чатами
 		r.Route("/chats", func(r chi.Router) {
-			r.Post("/add", h.ChatAdd(log))      // POST /chats/add
-			r.Delete("/delete", h.ChatDelete()) // DELETE /chats/delete
-			r.Post("/get", h.ChatGet(log))      // POST /chats/get
+			r.Post("/add", h.ChatAdd(log))         // POST /chats/add
+			r.Delete("/delete", h.ChatDelete(log)) // DELETE /chats/delete
+			r.Post("/get", h.ChatGet(log))         // POST /chats/get
 		})
 
 		// Работа с сообщениями
