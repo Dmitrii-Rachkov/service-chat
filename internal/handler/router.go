@@ -64,13 +64,6 @@ func (h *Handler) NewRouter(log *slog.Logger) *chi.Mux {
 	// Protected Endpoints
 	r.Group(func(r chi.Router) {
 		r.Use(h.AuthMiddleware)
-		// Работа с сущностью пользователя
-		r.Route("/users", func(r chi.Router) {
-			r.Post("/add", h.UserAdd())         // POST /users/add
-			r.Put("/update", h.UserUpdate())    // PUT /users/update
-			r.Delete("/delete", h.UserDelete()) // DELETE /users/delete
-		})
-
 		// Работа с чатами
 		r.Route("/chats", func(r chi.Router) {
 			r.Post("/add", h.ChatAdd(log))      // POST /chats/add
@@ -80,9 +73,10 @@ func (h *Handler) NewRouter(log *slog.Logger) *chi.Mux {
 
 		// Работа с сообщениями
 		r.Route("/messages", func(r chi.Router) {
-			r.Post("/add", h.MessageAdd(log))      // POST /messages/add
-			r.Post("/get", h.MessageGet(log))      // POST /messages/get
-			r.Put("/update", h.MessageUpdate(log)) // PUT /messages/update
+			r.Post("/add", h.MessageAdd(log))         // POST /messages/add
+			r.Post("/get", h.MessageGet(log))         // POST /messages/get
+			r.Put("/update", h.MessageUpdate(log))    // PUT /messages/update
+			r.Delete("/delete", h.MessageDelete(log)) // DELETE /messages/delete
 		})
 	})
 

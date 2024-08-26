@@ -20,6 +20,7 @@ type Response struct {
 	Message      string           `json:"message,omitempty"`
 	MessagesList []entity.Message `json:"messages_list,omitempty"`
 	ChatsList    []entity.Chat    `json:"chats_list,omitempty"`
+	DelMsgList   []entity.DelMsg  `json:"del_msg_list,omitempty"`
 }
 
 func OK(msg string) Response {

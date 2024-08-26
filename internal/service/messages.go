@@ -44,3 +44,12 @@ func (ms *MessageService) GetMessage(in dto.MessageGet, userID int) ([]entity.Me
 	}
 	return ms.repo.GetMessage(dataDB)
 }
+
+// DeleteMessage - удаление сообщений
+func (ms *MessageService) DeleteMessage(in dto.MessageDelete, userID int) ([]entity.DelMsg, error) {
+	dataDB := entity.MessageDel{
+		MsgIds: *in.MessageIds,
+		UserID: userID,
+	}
+	return ms.repo.DeleteMessage(dataDB)
+}

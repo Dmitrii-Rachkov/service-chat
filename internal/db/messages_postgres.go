@@ -14,6 +14,7 @@ const (
 	opMessageAdd    = "db.AddMessage"
 	opMessageUpdate = "db.UpdateMessage"
 	opMessageGet    = "db.GetMessage"
+	opDelMsg        = "db.DeleteMessage"
 )
 
 type MessagePostgres struct {
@@ -200,4 +201,38 @@ func (m *MessagePostgres) GetMessage(in entity.MessageGet) ([]entity.Message, er
 	}
 
 	return messages, nil
+}
+
+// DeleteMessage - soft удаление сообщений
+func (m *MessagePostgres) DeleteMessage(in entity.MessageDel) ([]entity.DelMsg, error) {
+	// Скелет sql запроса на удаление сообщений
+	stmtDelMsg, err := m.db.Prepare(`SELECT * FROM delete_message($1, VARIADIC $2::integer[])`)
+	if err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", opDelMsg, err)
+	}
+	defer stmtDelMsg.Close()
+
+	// Получаем информацию по результатам soft удаления сообщений из бд
+	rowsDel, err := stmtDelMsg.Query(in.UserID, pq.Array(in.MsgIds))
+	if err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", opDelMsg, err)
+	}
+	defer rowsDel.Close()
+
+	// Структура для записи результата soft удаления сообщений из бд
+	var delMsg []entity.DelMsg
+	for rowsDel.Next() {
+		var dm entity.DelMsg
+		if errDel := rowsDel.Scan(&dm.MessageID, &dm.Result); errDel != nil {
+			return nil, fmt.Errorf("error path: %s, error: %w", opDelMsg, errDel)
+		}
+		delMsg = append(delMsg, dm)
+	}
+
+	// В конце проверяем строки на ошибки (best practice)
+	if err = rowsDel.Err(); err != nil {
+		return nil, fmt.Errorf("error path: %s, error: %w", opDelMsg, err)
+	}
+
+	return delMsg, nil
 }
