@@ -24,6 +24,8 @@ type Chat interface {
 	CreateChat(in dto.ChatAdd) (int, error)
 	// GetChat - получение чатов пользователя
 	GetChat(in dto.ChatGet) ([]entity.Chat, error)
+	// DeleteChat - удаление чатов
+	DeleteChat(in dto.ChatDelete, userID int) ([]entity.DeletedChats, error)
 }
 
 // Message - интерфейс для сообщений

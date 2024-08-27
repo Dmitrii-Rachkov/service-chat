@@ -241,7 +241,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.Chat"
+                            "$ref": "#/definitions/dto.ChatDelete"
                         }
                     }
                 ],
@@ -249,7 +249,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "integer"
+                            "$ref": "#/definitions/handler.Response"
                         }
                     },
                     "400": {
@@ -260,6 +260,12 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
+                        }
+                    },
+                    "405": {
+                        "description": "Method Not Allowed",
                         "schema": {
                             "$ref": "#/definitions/handler.Response"
                         }
@@ -773,6 +779,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ChatDelete": {
+            "type": "object",
+            "required": [
+                "chat_ids"
+            ],
+            "properties": {
+                "chat_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "dto.ChatGet": {
             "type": "object",
             "required": [
@@ -894,6 +914,17 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.DeletedChats": {
+            "type": "object",
+            "properties": {
+                "chat_id": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.Message": {
             "type": "object",
             "properties": {
@@ -948,6 +979,12 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.Chat"
+                    }
+                },
+                "del_chats_list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.DeletedChats"
                     }
                 },
                 "error": {

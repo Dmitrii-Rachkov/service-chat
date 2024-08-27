@@ -18,6 +18,7 @@ type Authorization interface {
 type Chat interface {
 	CreateChat(in entity.ChatAdd) (int, error)
 	GetChat(in entity.ChatGet) ([]entity.Chat, error)
+	DeleteChat(in entity.ChatDelete) ([]entity.DeletedChats, error)
 }
 
 // Message - интерфейс для сообщений

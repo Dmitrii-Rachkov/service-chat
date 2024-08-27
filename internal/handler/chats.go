@@ -67,6 +67,7 @@ func (h *Handler) ChatAdd(log *slog.Logger) http.HandlerFunc {
 		// Если ошибок нет отправляем успешный ответ
 		log.Info("Chat created successfully", slog.Int("chatID", chatID))
 		render.JSON(w, r, OK(fmt.Sprintf("Chat created successfully, id: %d", chatID)))
+		return
 	}
 }
 
@@ -78,19 +79,60 @@ func (h *Handler) ChatAdd(log *slog.Logger) http.HandlerFunc {
 // @ID Delete chat
 // @Accept json
 // @Produce json
-// @Param input body entity.Chat true "chat info"
-// @Success 200 {integer} integer 1
-// @Failure 400,404 {object} Response
+// @Param input body dto.ChatDelete true "chat info"
+// @Success 200 {object} Response
+// @Failure 400,404,405 {object} Response
 // @Failure 500 {object} Response
 // @Failure default {object} Response
 // @Router /chats/delete [delete]
-func (h *Handler) ChatDelete() http.HandlerFunc {
+func (h *Handler) ChatDelete(log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fprintf, err := fmt.Fprintf(w, "<h1>ChatDelete</h1>")
-		if err != nil {
+		// Логируем наш запрос
+		const op = "handler.ChatDelete"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+
+		// Получаем id пользователя из контекста
+		idCtx, errCtx := GetUserID(r.Context())
+		if errCtx != nil {
+			log.Error("failed to get userID from context")
+			render.JSON(w, r, Error(errCtx.Error()))
 			return
 		}
-		_ = fprintf
+
+		// Структура для записи входных данных из JSON от пользователя
+		var req dto.ChatDelete
+
+		// Анализируем запрос от пользователя
+		fail := validate.BaseValidate(log, r.Body, &req)
+		if fail != nil && fail.ValidateErr != nil {
+			log.Error("invalid request data")
+			render.JSON(w, r, ValidationError(fail.ValidateErr))
+			return
+		} else if fail != nil && fail.ErrMsg != "" {
+			log.Error("invalid request data")
+			render.JSON(w, r, Error(fail.ErrMsg))
+			return
+		}
+
+		// Отправляем валидную структуру на слой сервиса
+		chatsDel, errMsg := h.services.Chat.DeleteChat(req, idCtx)
+		if errMsg != nil {
+			log.Error("failed to delete chats", logger.Err(errMsg))
+			render.JSON(w, r, Error(fmt.Sprintf("Failed to delete chats: %s", errMsg)))
+			return
+		}
+
+		// Если ошибок нет отправляем успешный ответ
+		log.Info("Chats delete successfully", "Chats", chatsDel)
+		render.JSON(w, r, Response{
+			Status:       StatusOK,
+			Message:      "Result of deleted chats",
+			DelChatsList: chatsDel},
+		)
+		return
 	}
 }
 
