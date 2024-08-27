@@ -67,9 +67,6 @@ func main() {
 	}
 	log.Info("Server started")
 
-	// TODO: handlers for work service
-	// реализуем все остальные handlers для работы основной логики сервиса
-
 	// TODO: tests
 	// делаем unit тесты
 
