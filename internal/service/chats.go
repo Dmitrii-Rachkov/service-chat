@@ -30,3 +30,12 @@ func (s *ChatService) GetChat(in dto.ChatGet) ([]entity.Chat, error) {
 	}
 	return s.repo.GetChat(dataDB)
 }
+
+// DeleteChat - удаляем чаты
+func (s *ChatService) DeleteChat(in dto.ChatDelete, userID int) ([]entity.DeletedChats, error) {
+	dataDB := entity.ChatDelete{
+		ChatIds: *in.ChatIds,
+		UserID:  userID,
+	}
+	return s.repo.DeleteChat(dataDB)
+}

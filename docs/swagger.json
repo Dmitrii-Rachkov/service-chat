@@ -235,7 +235,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.Chat"
+                            "$ref": "#/definitions/dto.ChatDelete"
                         }
                     }
                 ],
@@ -243,7 +243,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "integer"
+                            "$ref": "#/definitions/handler.Response"
                         }
                     },
                     "400": {
@@ -254,6 +254,12 @@
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Response"
+                        }
+                    },
+                    "405": {
+                        "description": "Method Not Allowed",
                         "schema": {
                             "$ref": "#/definitions/handler.Response"
                         }
@@ -767,6 +773,20 @@
                 }
             }
         },
+        "dto.ChatDelete": {
+            "type": "object",
+            "required": [
+                "chat_ids"
+            ],
+            "properties": {
+                "chat_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "dto.ChatGet": {
             "type": "object",
             "required": [
@@ -888,6 +908,17 @@
                 }
             }
         },
+        "entity.DeletedChats": {
+            "type": "object",
+            "properties": {
+                "chat_id": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.Message": {
             "type": "object",
             "properties": {
@@ -942,6 +973,12 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.Chat"
+                    }
+                },
+                "del_chats_list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.DeletedChats"
                     }
                 },
                 "error": {

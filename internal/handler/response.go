@@ -15,11 +15,12 @@ const (
 )
 
 type Response struct {
-	Status       string           `json:"status"`
-	Error        string           `json:"error,omitempty"`
-	Message      string           `json:"message,omitempty"`
-	MessagesList []entity.Message `json:"messages_list,omitempty"`
-	ChatsList    []entity.Chat    `json:"chats_list,omitempty"`
+	Status       string                `json:"status"`
+	Error        string                `json:"error,omitempty"`
+	Message      string                `json:"message,omitempty"`
+	MessagesList []entity.Message      `json:"messages_list,omitempty"`
+	ChatsList    []entity.Chat         `json:"chats_list,omitempty"`
+	DelChatsList []entity.DeletedChats `json:"del_chats_list,omitempty"`
 	DelMsgList   []entity.DelMsg  `json:"del_msg_list,omitempty"`
 }
 

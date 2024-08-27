@@ -45,6 +45,76 @@ ALTER TABLE "chats_messages" ADD FOREIGN KEY ("message_id") REFERENCES "message"
 ALTER TABLE "message" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE NO ACTION;
 
 
+-- функция для удаления чатов
+CREATE OR REPLACE FUNCTION delete_chat(userID integer, VARIADIC chatID integer[]) RETURNS TABLE(identifier integer, result text) AS
+$$
+DECLARE
+    idChat integer := 0;
+    errExist text := 'Chat does not exist or has already been deleted';
+    success text := 'Chat successfully deleted';
+BEGIN
+    -- если чаты не существуют - отправляем ошибку
+    IF NOT EXISTS(
+        SELECT *
+        FROM users_chat
+        WHERE user_id = userID
+          AND chat_id = ANY (chatID)
+    )
+    THEN
+        RAISE EXCEPTION 'Not found chats';
+    END IF;
+
+    -- временная таблица для хранения результата update
+    CREATE TEMPORARY TABLE IF NOT EXISTS updated_chats(
+        id integer,
+        res text
+    );
+
+    -- удаляем чаты, если не существуют или уже удалены - отправляем ошибку
+    FOREACH idChat IN ARRAY chatID
+        LOOP
+            -- удаляем чат
+            UPDATE chat
+            SET is_deleted = true
+            WHERE id = idChat
+              AND is_deleted = false;
+            -- если нет такой записи или уже удален, то добавляем (id,ошибка) в таблицу updated_chats
+            IF NOT found THEN
+                INSERT INTO updated_chats(id, res)
+                VALUES (idChat, errExist);
+            ELSE
+                -- если запись есть и не удалена, то добавляем (id,success) в таблицу updated_chats
+                INSERT INTO updated_chats(id, res)
+                VALUES (idChat, success);
+            END IF;
+        END LOOP;
+
+    -- soft удаление всех сообщений в этом чате, даже если не принадлежат пользователю
+    WITH msg AS (
+        SELECT cm.message_id
+        FROM users_chat AS uc
+        INNER JOIN chats_messages AS cm
+        ON uc.id = cm.users_chat_id
+        WHERE uc.chat_id IN (SELECT id FROM updated_chats
+                             WHERE res = success
+        )
+    )
+    UPDATE message
+    SET is_deleted = true
+    WHERE id IN (SELECT message_id FROM msg);
+
+    -- возвращаем итоговый результат
+    RETURN QUERY SELECT id AS rec, res AS result
+                 FROM updated_chats;
+
+    -- удаляем временную таблицу
+    DROP TABLE updated_chats;
+END;
+$$
+LANGUAGE plpgsql;
+
+
+
 -- функция для удаления сообщений
 CREATE OR REPLACE FUNCTION delete_message(userID integer, VARIADIC msgID integer[]) RETURNS TABLE(identifier integer, result text) AS
 $$

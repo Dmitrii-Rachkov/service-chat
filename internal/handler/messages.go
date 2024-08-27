@@ -41,6 +41,7 @@ func (h *Handler) MessageAdd(log *slog.Logger) http.HandlerFunc {
 		if errCtx != nil {
 			log.Error("failed to get userID from context")
 			render.JSON(w, r, Error(errCtx.Error()))
+			return
 		}
 
 		// Структура для записи входных данных из JSON от пользователя
@@ -76,7 +77,7 @@ func (h *Handler) MessageAdd(log *slog.Logger) http.HandlerFunc {
 		// Если ошибок нет отправляем успешный ответ
 		log.Info("Message created successfully", slog.Int("messageID", messageID))
 		render.JSON(w, r, OK(fmt.Sprintf("Message created successfully, id: %d", messageID)))
-
+		return
 	}
 }
 
@@ -180,6 +181,7 @@ func (h *Handler) MessageUpdate(log *slog.Logger) http.HandlerFunc {
 		if errCtx != nil {
 			log.Error("failed to get userID from context")
 			render.JSON(w, r, Error(errCtx.Error()))
+			return
 		}
 
 		// Структура для записи входных данных из JSON от пользователя
@@ -215,6 +217,7 @@ func (h *Handler) MessageUpdate(log *slog.Logger) http.HandlerFunc {
 		// Если ошибок нет отправляем успешный ответ
 		log.Info("Message updated successfully", slog.Int("messageID", messageID))
 		render.JSON(w, r, OK(fmt.Sprintf("Message update successfully, id: %d", messageID)))
+		return
 	}
 }
 
