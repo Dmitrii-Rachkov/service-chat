@@ -36,6 +36,8 @@ type Message interface {
 	UpdateMessage(in dto.MessageUpdate) (int, error)
 	// GetMessage - получить список всех сообщений в конкретном чате
 	GetMessage(in dto.MessageGet, userID int) ([]entity.Message, error)
+	// DeleteMessage - удаление сообщений от лица пользователя
+	DeleteMessage(in dto.MessageDelete, userID int) ([]entity.DelMsg, error)
 }
 
 // Service - собирает все наши интерфейсы в одном месте

@@ -30,3 +30,15 @@ type MessageGet struct {
 	Offset int64 `json:"offset"`
 	UserID int   `json:"userID"`
 }
+
+// MessageDel - сущность для удаления сообщений
+type MessageDel struct {
+	MsgIds []int64 `json:"message_Ids"`
+	UserID int     `json:"user_id"`
+}
+
+// DelMsg - сущность для получения результата удаления сообщений из бд
+type DelMsg struct {
+	MessageID int64  `json:"message_id" db:"identifier"`
+	Result    string `json:"result" db:"result"`
+}

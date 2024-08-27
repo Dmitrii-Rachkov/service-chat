@@ -113,3 +113,58 @@ END;
 $$
 LANGUAGE plpgsql;
 
+
+
+-- функция для удаления сообщений
+CREATE OR REPLACE FUNCTION delete_message(userID integer, VARIADIC msgID integer[]) RETURNS TABLE(identifier integer, result text) AS
+$$
+DECLARE
+    idMsg integer := 0;
+    errExist text := 'Message does not exist or has already been deleted';
+    success text := 'Message successfully deleted';
+BEGIN
+    -- если сообщения не существуют - отправляем ошибку
+    IF NOT EXISTS(
+        SELECT *
+        FROM message
+        WHERE user_id = userID
+        AND id = ANY (msgID)
+    )
+    THEN
+        RAISE EXCEPTION 'Not found messages';
+    END IF;
+
+    -- временная таблица для хранения результата update
+    CREATE TEMPORARY TABLE IF NOT EXISTS updated_msg(
+        id integer,
+        res text
+    );
+
+    -- удаляем сообщения, если не существуют или уже удалены - отправляем ошибку
+    FOREACH idMsg IN ARRAY msgID
+        LOOP
+            -- удаляем сообщение
+            UPDATE message
+            SET is_deleted = true
+            WHERE id = idMsg
+            AND is_deleted = false;
+            -- если нет такой записи или уже удален, то добавляем (id,ошибка) в таблицу updated_msg
+            IF NOT found THEN
+                INSERT INTO updated_msg(id, res)
+                VALUES (idMsg, errExist);
+            ELSE
+                -- если запись есть и не удалена, то добавляем (id,success) в таблицу updated_msg
+                INSERT INTO updated_msg(id, res)
+                VALUES (idMsg, success);
+            END IF;
+        END LOOP;
+
+    -- возвращаем итоговый результат
+    RETURN QUERY SELECT id AS rec, res AS result
+                 FROM updated_msg;
+
+    -- удаляем временную таблицу
+    DROP TABLE updated_msg;
+END;
+$$
+LANGUAGE plpgsql;

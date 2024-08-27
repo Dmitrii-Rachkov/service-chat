@@ -26,6 +26,7 @@ type Message interface {
 	AddMessage(in entity.MessageAdd) (int, error)
 	UpdateMessage(in entity.MessageUpdate) (int, error)
 	GetMessage(in entity.MessageGet) ([]entity.Message, error)
+	DeleteMessage(in entity.MessageDel) ([]entity.DelMsg, error)
 }
 
 // DB - собирает все наши интерфейсы в одном месте
