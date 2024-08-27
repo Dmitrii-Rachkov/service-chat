@@ -43,6 +43,15 @@ definitions:
     - text
     - user_id
     type: object
+  dto.MessageDelete:
+    properties:
+      message_ids:
+        items:
+          type: integer
+        type: array
+    required:
+    - message_ids
+    type: object
   dto.MessageGet:
     properties:
       chat_id:
@@ -106,6 +115,13 @@ definitions:
       name:
         type: string
     type: object
+  entity.DelMsg:
+    properties:
+      message_id:
+        type: integer
+      result:
+        type: string
+    type: object
   entity.DeletedChats:
     properties:
       chat_id:
@@ -126,25 +142,6 @@ definitions:
       user_id:
         type: integer
     type: object
-  entity.User:
-    properties:
-      createdAt:
-        type: string
-      id:
-        type: integer
-      isDeleted:
-        type: boolean
-      password:
-        maxLength: 12
-        minLength: 6
-        type: string
-      username:
-        maxLength: 20
-        type: string
-    required:
-    - password
-    - username
-    type: object
   handler.Response:
     properties:
       chats_list:
@@ -154,6 +151,10 @@ definitions:
       del_chats_list:
         items:
           $ref: '#/definitions/entity.DeletedChats'
+        type: array
+      del_msg_list:
+        items:
+          $ref: '#/definitions/entity.DelMsg'
         type: array
       error:
         type: string
@@ -439,6 +440,51 @@ paths:
       summary: MessageAdd
       tags:
       - Message
+  /messages/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete message
+      operationId: Delete message
+      parameters:
+      - description: message info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MessageDelete'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "405":
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: MessageDelete
+      tags:
+      - Message
   /messages/get:
     post:
       consumes:
@@ -529,129 +575,6 @@ paths:
       summary: MessageUpdate
       tags:
       - Message
-  /users/add:
-    post:
-      consumes:
-      - application/json
-      description: Add new user
-      operationId: Add new user
-      parameters:
-      - description: user info
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/entity.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.Response'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.Response'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/handler.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: UserAdd
-      tags:
-      - User
-  /users/delete:
-    delete:
-      consumes:
-      - application/json
-      description: Delete user
-      operationId: Delete user
-      parameters:
-      - description: user info
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/entity.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.Response'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.Response'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/handler.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: UserDelete
-      tags:
-      - User
-  /users/update:
-    put:
-      consumes:
-      - application/json
-      description: Update user
-      operationId: Update user
-      parameters:
-      - description: user info
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/entity.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.Response'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.Response'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/handler.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: UserUpdate
-      tags:
-      - User
 securityDefinitions:
   ApiKeyAuth:
     in: header
