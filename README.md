@@ -19,6 +19,8 @@ https://blog.jetbrains.com/go/2020/05/08/running-go-applications-using-docker-co
 ### 1. Можно посмотреть по ссылке:
 http://localhost:9000/swagger/index.html/
 ### 2. Генерация схемы - swag init -g cmd/service/main.go
+### 3.1 Визуализация проекта - go-callvis -group pkg ./cmd/service | dot -Tpng -o filename.png
+### 3.2 В браузере по адресу http://localhost:7878/ откроется визуализированная схема проекта
 
 # Структура проекта
 ## 1. cmd - точка входа в программу, здесь лежит файл main
