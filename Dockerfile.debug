@@ -8,6 +8,8 @@ WORKDIR /app
 # COPY *.go ./
 # Или можно скопировать все файлы исходного кода в внутрь созданного образа
 COPY ./ ./
+# Костыль для Delve с образом alpine в дебаг режиме
+RUN CGO_ENABLED=0 go install github.com/go-delve/delve/cmd/dlv@latest
 # Загружаем все модули для работы нашего приложения
 RUN go mod download
 # Компилируем наше приложение (файл main.go) в бинарный файл с именем chat-main в корень файловой системы образа

@@ -6,6 +6,9 @@ import (
 	"service-chat/internal/dto"
 )
 
+// Генерируем моки для интерфейсов слоя сервиса
+//go:generate mockgen -source=service.go -destination=mocks/service_mock.go
+
 // Здесь интерфейсы для слоя бизнес-логики нашего приложения
 
 // Authorization - интерфейс авторизации
