@@ -48,40 +48,35 @@ func TestHandler_SignUp(t *testing.T) {
 			expectedResponseBody: `{"status":"OK","message":"Create user is successful, id: 1"}`,
 		},
 		{
-			name:      "Required field username is missing",
-			inputBody: `{"password": "adgui*"}`,
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
+			name:                 "Required field username is missing",
+			inputBody:            `{"password": "adgui*"}`,
 			mockBehavior:         func(s *mockService.MockAuthorization, user dto.SignUpRequest) {},
 			expectedStatusCode:   http.StatusOK,
 			expectedResponseBody: `{"status":"Error","error":"Field Username is a required field"}`,
 		},
 		{
-			name:      "Required field password is missing",
-			inputBody: `{"username": "Andrey"}`,
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
+			name:                 "Required field password is missing",
+			inputBody:            `{"username": "Andrey"}`,
 			mockBehavior:         func(s *mockService.MockAuthorization, user dto.SignUpRequest) {},
 			expectedStatusCode:   http.StatusOK,
 			expectedResponseBody: `{"status":"Error","error":"Field Password is a required field"}`,
 		},
 		{
-			name:      "All required field is missing",
-			inputBody: `{}`,
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
+			name:                 "All required field is missing",
+			inputBody:            `{}`,
 			mockBehavior:         func(s *mockService.MockAuthorization, user dto.SignUpRequest) {},
 			expectedStatusCode:   http.StatusOK,
 			expectedResponseBody: `{"status":"Error","error":"Field Username is a required field, Field Password is a required field"}`,
 		},
 		{
-			name: "Request body is nil",
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
+			name:                 "Request body is nil",
 			mockBehavior:         func(s *mockService.MockAuthorization, user dto.SignUpRequest) {},
 			expectedStatusCode:   http.StatusOK,
 			expectedResponseBody: `{"status":"Error","error":"Empty request"}`,
 		},
 		{
-			name:      "Error decode",
-			inputBody: `{"username": , "password": "adgui*"}`,
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
+			name:                 "Error decode",
+			inputBody:            `{"username": , "password": "adgui*"}`,
 			mockBehavior:         func(s *mockService.MockAuthorization, user dto.SignUpRequest) {},
 			expectedStatusCode:   http.StatusOK,
 			expectedResponseBody: `{"status":"Error","error":"Invalid request"}`,
@@ -93,7 +88,6 @@ func TestHandler_SignUp(t *testing.T) {
 				Username: "Andreytuoplkjhgsdtyw",
 				Password: "adgui*",
 			},
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
 			mockBehavior: func(s *mockService.MockAuthorization, user dto.SignUpRequest) {
 				s.EXPECT().CreateUser(user).Return(1, nil)
 			},
@@ -101,41 +95,36 @@ func TestHandler_SignUp(t *testing.T) {
 			expectedResponseBody: `{"status":"OK","message":"Create user is successful, id: 1"}`,
 		},
 		{
-			name:      "Username 21 chars",
-			inputBody: `{"username": "Andreytuoplkjhgsdtywk", "password": "adgui*"}`,
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
+			name:                 "Username 21 chars",
+			inputBody:            `{"username": "Andreytuoplkjhgsdtywk", "password": "adgui*"}`,
 			mockBehavior:         func(s *mockService.MockAuthorization, user dto.SignUpRequest) {},
 			expectedStatusCode:   http.StatusOK,
 			expectedResponseBody: `{"status":"Error","error":"Field Username cannot exceed 20 characters"}`,
 		},
 		{
-			name:      "Username forbidden characters",
-			inputBody: `{"username": "Andrey@", "password": "adgui*"}`,
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
+			name:                 "Username forbidden characters",
+			inputBody:            `{"username": "Andrey@", "password": "adgui*"}`,
 			mockBehavior:         func(s *mockService.MockAuthorization, user dto.SignUpRequest) {},
 			expectedStatusCode:   http.StatusOK,
 			expectedResponseBody: `{"status":"Error","error":"Field Username must not contain symbols !@#$\u0026*()?"}`,
 		},
 		{
-			name:      "Password min 6 chars",
-			inputBody: `{"username": "Andrey", "password": "adgui"}`,
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
+			name:                 "Password min 6 chars",
+			inputBody:            `{"username": "Andrey", "password": "adgui"}`,
 			mockBehavior:         func(s *mockService.MockAuthorization, user dto.SignUpRequest) {},
 			expectedStatusCode:   http.StatusOK,
 			expectedResponseBody: `{"status":"Error","error":"Field Password must contain at least 6 characters"}`,
 		},
 		{
-			name:      "Password max 12 chars",
-			inputBody: `{"username": "Andrey", "password": "qwertyuiopasd"}`,
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
+			name:                 "Password max 12 chars",
+			inputBody:            `{"username": "Andrey", "password": "qwertyuiopasd"}`,
 			mockBehavior:         func(s *mockService.MockAuthorization, user dto.SignUpRequest) {},
 			expectedStatusCode:   http.StatusOK,
 			expectedResponseBody: `{"status":"Error","error":"Field Password cannot exceed 12 characters"}`,
 		},
 		{
-			name:      "Password contains special character",
-			inputBody: `{"username": "Andrey", "password": "qwerty"}`,
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
+			name:                 "Password contains special character",
+			inputBody:            `{"username": "Andrey", "password": "qwerty"}`,
 			mockBehavior:         func(s *mockService.MockAuthorization, user dto.SignUpRequest) {},
 			expectedStatusCode:   http.StatusOK,
 			expectedResponseBody: `{"status":"Error","error":"Field Password must contain Latin letters and Arabic numerals, as well as the symbols @#$\u0026*()"}`,
@@ -147,7 +136,6 @@ func TestHandler_SignUp(t *testing.T) {
 				Username: "Andrey",
 				Password: "adgui*",
 			},
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
 			mockBehavior: func(s *mockService.MockAuthorization, user dto.SignUpRequest) {
 				s.EXPECT().CreateUser(user).Return(0, errors.New("unique_violation"))
 			},
@@ -161,7 +149,6 @@ func TestHandler_SignUp(t *testing.T) {
 				Username: "Andrey",
 				Password: "adgui*",
 			},
-			// Реализуем поведение мока, возвращаем userID и nil ошибку
 			mockBehavior: func(s *mockService.MockAuthorization, user dto.SignUpRequest) {
 				s.EXPECT().CreateUser(user).Return(0, errors.New("fail"))
 			},
