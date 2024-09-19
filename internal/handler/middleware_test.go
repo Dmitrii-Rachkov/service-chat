@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -131,4 +132,46 @@ func TestHandler_AuthMiddleware(t *testing.T) {
 		})
 	}
 
+}
+
+func Test_GetUserID(t *testing.T) {
+	// Функция для создания тестового контекста
+	var getContext = func(id int) context.Context {
+		ctx := context.WithValue(context.Background(), userCtx, id)
+		return ctx
+	}
+
+	testTable := []struct {
+		name          string
+		ctx           context.Context
+		expectedID    int
+		isFail        bool
+		expectedError error
+	}{
+		{
+			name:       "OK",
+			ctx:        getContext(1),
+			expectedID: 1,
+		},
+		{
+			name:          "Not found",
+			ctx:           context.Background(),
+			isFail:        true,
+			expectedError: errors.New("user id not found"),
+		},
+	}
+
+	for _, tt := range testTable {
+		t.Run(tt.name, func(t *testing.T) {
+			id, err := GetUserID(tt.ctx)
+			if tt.isFail {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, tt.expectedID, id)
+		})
+	}
 }
