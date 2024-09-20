@@ -1,13 +1,10 @@
 package handler
 
 import (
-	"fmt"
-	"log/slog"
-	"net/http"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger"
+	"log/slog"
 
 	_ "service-chat/docs"
 	"service-chat/internal/service"
@@ -43,15 +40,6 @@ func (h *Handler) NewRouter(log *slog.Logger) *chi.Mux {
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("http://localhost:9000/swagger/doc.json"), //The url pointing to API definition
 	))
-
-	// Тестовый handler
-	r.Get("/docker", func(writer http.ResponseWriter, request *http.Request) {
-		fprintf, err := fmt.Fprintf(writer, "<h1>Hello from Docker container!</h1>")
-		if err != nil {
-			return
-		}
-		_ = fprintf
-	})
 
 	// Структура наших handlers
 
