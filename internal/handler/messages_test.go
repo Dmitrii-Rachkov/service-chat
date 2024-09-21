@@ -457,3 +457,177 @@ func TestHandler_MessageGet(t *testing.T) {
 		})
 	}
 }
+
+func TestHandler_MessageUpdate(t *testing.T) {
+	// Структура для последующей реализации поведения мока
+	type mockBehaviour func(s *mockService.MockMessage, message dto.MessageUpdate)
+
+	// Тестовая таблица с данными
+	testTable := []struct {
+		name                 string
+		inputBody            string
+		inputMessage         dto.MessageUpdate
+		mockBehaviour        mockBehaviour
+		unauthorized         bool
+		expectedStatusCode   int
+		expectedResponseBody string
+	}{
+		{
+			name:      "OK",
+			inputBody: `{"message_id": 1,"user_id": 1,"new_text": "new_text"}`,
+			inputMessage: dto.MessageUpdate{
+				MessageID: 1,
+				UserID:    1,
+				NewText:   "new_text",
+			},
+			mockBehaviour: func(s *mockService.MockMessage, message dto.MessageUpdate) {
+				s.EXPECT().UpdateMessage(message).Return(1, nil)
+			},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"OK","message":"Message update successfully, id: 1"}`,
+		},
+		{
+			name:                 "Required field message_id is missing",
+			inputBody:            `{"user_id": 1,"new_text": "new_text"}`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageUpdate) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Field MessageID is a required field"}`,
+		},
+		{
+			name:                 "Required field user_id is missing",
+			inputBody:            `{"message_id": 1,"new_text": "new_text"}`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageUpdate) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Field UserID is a required field"}`,
+		},
+		{
+			name:                 "Required field new_text is missing",
+			inputBody:            `{"message_id": 1,"user_id": 1}`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageUpdate) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Field NewText is a required field"}`,
+		},
+		{
+			name:                 "Zero message_id",
+			inputBody:            `{"message_id": 0,"user_id": 1,"new_text": "new_text"}`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageUpdate) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Field MessageID is a required field"}`,
+		},
+		{
+			name:                 "Zero user_id",
+			inputBody:            `{"message_id": 1,"user_id": 0,"new_text": "new_text"}`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageUpdate) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Field UserID is a required field"}`,
+		},
+		{
+			name:                 "Nil new_text",
+			inputBody:            `{"message_id": 1,"user_id": 1,"new_text": ""}`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageUpdate) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Field NewText is a required field"}`,
+		},
+		{
+			name:                 "Empty message_id",
+			inputBody:            `{"message_id": ,"user_id": 1,"new_text": "new_text"}`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageUpdate) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Invalid request"}`,
+		},
+		{
+			name:                 "Empty user_id",
+			inputBody:            `{"message_id": 1,"user_id": ,"new_text": "new_text"}`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageUpdate) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Invalid request"}`,
+		},
+		{
+			name:                 "Nil new_text",
+			inputBody:            `{"message_id": 1,"user_id": 1,"new_text": }`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageUpdate) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Invalid request"}`,
+		},
+		{
+			name:                 "Request body is nil",
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageUpdate) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Empty request"}`,
+		},
+		{
+			name:      "Other error",
+			inputBody: `{"message_id": 1,"user_id": 1,"new_text": "new_text"}`,
+			inputMessage: dto.MessageUpdate{
+				MessageID: 1,
+				UserID:    1,
+				NewText:   "new_text",
+			},
+			mockBehaviour: func(s *mockService.MockMessage, message dto.MessageUpdate) {
+				s.EXPECT().UpdateMessage(message).Return(0, errors.New("some error"))
+			},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Failed to update message: some error"}`,
+		},
+		{
+			name:                 "User id not found",
+			inputBody:            `{"message_id": 1,"user_id": 1,"new_text": "new_text"}`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageUpdate) {},
+			unauthorized:         true,
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"user id not found"}`,
+		},
+		{
+			name:                 "Invalid user ID",
+			inputBody:            `{"message_id": 1,"user_id": 2,"new_text": "new_text"}`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageUpdate) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Invalid user ID"}`,
+		},
+	}
+
+	// Итерируемся по нашей тестовой таблице
+	for _, tt := range testTable {
+		t.Run(tt.name, func(t *testing.T) {
+			// Инициализируем зависимости
+
+			//Инициализируем контролер для мока сервиса
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			// Создаём моки сервиса сообщений
+			mockMessage := mockService.NewMockMessage(ctrl)
+
+			// Передаём структуру сообщения
+			tt.mockBehaviour(mockMessage, tt.inputMessage)
+
+			// Создаём объект сервиса в который передадим наш мок сообщения
+			services := &service.Service{Message: mockMessage}
+
+			// Создаём экземпляр обработчика
+			handler := NewHandler(services)
+
+			// Мокируем логгер
+			mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
+
+			// Инициализируем сервер
+			r := chi.NewRouter()
+			r.Put("/messages/update", handler.MessageUpdate(mockLog))
+
+			// Готовим тестовый запрос
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPut, "/messages/update", strings.NewReader(tt.inputBody))
+
+			// Выполняем запрос
+			if tt.unauthorized {
+				r.ServeHTTP(w, req)
+			} else {
+				r.ServeHTTP(w, req.WithContext(context.WithValue(req.Context(), userCtx, 1)))
+			}
+
+			// Сравниваем ожидаемый и актуальный результат
+			assert.Equal(t, tt.expectedStatusCode, w.Code)
+			assert.Equal(t, tt.expectedResponseBody, strings.TrimSpace(w.Body.String()))
+		})
+	}
+}
