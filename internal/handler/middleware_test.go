@@ -131,7 +131,6 @@ func TestHandler_AuthMiddleware(t *testing.T) {
 			assert.Equal(t, tt.expectedResponseBody, strings.TrimSpace(w.Body.String()))
 		})
 	}
-
 }
 
 func Test_GetUserID(t *testing.T) {

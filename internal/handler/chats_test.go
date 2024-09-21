@@ -119,14 +119,14 @@ func TestHandler_ChatAdd(t *testing.T) {
 			inputBody:            `{"chat_name": "chat_1","users": []}`,
 			mockBehavior:         func(s *mockService.MockChat, chat dto.ChatAdd) {},
 			expectedStatusCode:   http.StatusOK,
-			expectedResponseBody: `{"status":"Error","error":"Field Users must have at least 2 elements"}`,
+			expectedResponseBody: `{"status":"Error","error":"Field Users must contain at least 2 characters"}`,
 		},
 		{
 			name:                 "One user",
 			inputBody:            `{"chat_name": "chat_1","users": [1]}`,
 			mockBehavior:         func(s *mockService.MockChat, chat dto.ChatAdd) {},
 			expectedStatusCode:   http.StatusOK,
-			expectedResponseBody: `{"status":"Error","error":"Field Users must have at least 2 elements"}`,
+			expectedResponseBody: `{"status":"Error","error":"Field Users must contain at least 2 characters"}`,
 		},
 		{
 			name:                 "Chat_name is nil",
@@ -175,10 +175,10 @@ func TestHandler_ChatAdd(t *testing.T) {
 			// Создаём моки сервиса чат
 			mockChat := mockService.NewMockChat(ctrl)
 
-			// Передаём структуру пользователя
+			// Передаём структуру чата
 			tt.mockBehavior(mockChat, tt.inputChat)
 
-			// Создаём объект сервиса в который передадим наш мок авторизации
+			// Создаём объект сервиса в который передадим наш мок чата
 			services := &service.Service{Chat: mockChat}
 
 			// Создаём экземпляр обработчика
@@ -205,7 +205,6 @@ func TestHandler_ChatAdd(t *testing.T) {
 			assert.Equal(t, tt.expectedResponseBody, strings.TrimSpace(w.Body.String()))
 		})
 	}
-
 }
 
 func TestHandler_ChatDelete(t *testing.T) {
@@ -316,10 +315,10 @@ func TestHandler_ChatDelete(t *testing.T) {
 			// Создаём моки сервиса чат
 			mockChat := mockService.NewMockChat(ctrl)
 
-			// Передаём структуру пользователя
+			// Передаём структуру чата
 			tt.mockBehavior(mockChat, tt.inputChat)
 
-			// Создаём объект сервиса в который передадим наш мок авторизации
+			// Создаём объект сервиса в который передадим наш мок чата
 			services := &service.Service{Chat: mockChat}
 
 			// Создаём экземпляр обработчика
@@ -330,11 +329,11 @@ func TestHandler_ChatDelete(t *testing.T) {
 
 			// Инициализируем сервер
 			r := chi.NewRouter()
-			r.Post("/chats/delete", handler.ChatDelete(mockLog))
+			r.Delete("/chats/delete", handler.ChatDelete(mockLog))
 
 			// Готовим тестовый запрос
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest(http.MethodPost, "/chats/delete", strings.NewReader(tt.inputBody))
+			req := httptest.NewRequest(http.MethodDelete, "/chats/delete", strings.NewReader(tt.inputBody))
 
 			// Выполняем запрос добавляя в контекст userID
 			r.ServeHTTP(w, req.WithContext(context.WithValue(req.Context(), userCtx, 1)))
@@ -344,7 +343,6 @@ func TestHandler_ChatDelete(t *testing.T) {
 			assert.Equal(t, tt.expectedResponseBody, strings.TrimSpace(w.Body.String()))
 		})
 	}
-
 }
 
 func TestHandler_ChatGet(t *testing.T) {
@@ -483,10 +481,10 @@ func TestHandler_ChatGet(t *testing.T) {
 			// Создаём моки сервиса чат
 			mockChat := mockService.NewMockChat(ctrl)
 
-			// Передаём структуру пользователя
+			// Передаём структуру чата
 			tt.mockBehavior(mockChat, tt.inputChat)
 
-			// Создаём объект сервиса в который передадим наш мок авторизации
+			// Создаём объект сервиса в который передадим наш мок чата
 			services := &service.Service{Chat: mockChat}
 
 			// Создаём экземпляр обработчика
@@ -511,5 +509,4 @@ func TestHandler_ChatGet(t *testing.T) {
 			assert.Equal(t, tt.expectedResponseBody, strings.TrimSpace(w.Body.String()))
 		})
 	}
-
 }
