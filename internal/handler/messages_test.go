@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -617,6 +618,173 @@ func TestHandler_MessageUpdate(t *testing.T) {
 			// Готовим тестовый запрос
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodPut, "/messages/update", strings.NewReader(tt.inputBody))
+
+			// Выполняем запрос
+			if tt.unauthorized {
+				r.ServeHTTP(w, req)
+			} else {
+				r.ServeHTTP(w, req.WithContext(context.WithValue(req.Context(), userCtx, 1)))
+			}
+
+			// Сравниваем ожидаемый и актуальный результат
+			assert.Equal(t, tt.expectedStatusCode, w.Code)
+			assert.Equal(t, tt.expectedResponseBody, strings.TrimSpace(w.Body.String()))
+		})
+	}
+}
+
+func TestHandler_MessageDelete(t *testing.T) {
+	// Структура для последующей реализации поведения мока
+	type mockBehaviour func(s *mockService.MockMessage, message dto.MessageDelete)
+
+	// Тестовая таблица с данными
+	testTable := []struct {
+		name                 string
+		inputBody            string
+		inputMessage         dto.MessageDelete
+		mockBehaviour        mockBehaviour
+		unauthorized         bool
+		expectedStatusCode   int
+		expectedResponseBody string
+	}{
+		{
+			name:      "OK one message",
+			inputBody: `{"message_ids": [1]}`,
+			inputMessage: dto.MessageDelete{
+				MessageIds: &[]int64{1},
+			},
+			mockBehaviour: func(s *mockService.MockMessage, message dto.MessageDelete) {
+				s.EXPECT().DeleteMessage(message, 1).Return([]entity.DelMsg{
+					{
+						MessageID: 1,
+						Result:    "Message successfully deleted",
+					},
+				}, nil)
+			},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"OK","message":"Result of deleted messages","del_msg_list":[{"message_id":1,"result":"Message successfully deleted"}]}`,
+		},
+		{
+			name:      "OK many message",
+			inputBody: `{"message_ids": [1,2,3]}`,
+			inputMessage: dto.MessageDelete{
+				MessageIds: &[]int64{1, 2, 3},
+			},
+			mockBehaviour: func(s *mockService.MockMessage, message dto.MessageDelete) {
+				s.EXPECT().DeleteMessage(message, 1).Return([]entity.DelMsg{
+					{
+						MessageID: 1,
+						Result:    "Message successfully deleted",
+					},
+					{
+						MessageID: 2,
+						Result:    "Message successfully deleted",
+					},
+					{
+						MessageID: 3,
+						Result:    "Message successfully deleted",
+					},
+				}, nil)
+			},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"OK","message":"Result of deleted messages","del_msg_list":[{"message_id":1,"result":"Message successfully deleted"},{"message_id":2,"result":"Message successfully deleted"},{"message_id":3,"result":"Message successfully deleted"}]}`,
+		},
+		{
+			name:                 "Required field message_ids is missing",
+			inputBody:            `{}`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageDelete) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Field MessageIds is a required field"}`,
+		},
+		{
+			name:                 "Empty value message_ids",
+			inputBody:            `{"message_ids": []}`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageDelete) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Field MessageIds must contain at least 1 characters"}`,
+		},
+		{
+			name:      "Zero value message_ids",
+			inputBody: `{"message_ids": [0]}`,
+			inputMessage: dto.MessageDelete{
+				MessageIds: &[]int64{0},
+			},
+			mockBehaviour: func(s *mockService.MockMessage, message dto.MessageDelete) {
+				s.EXPECT().DeleteMessage(message, 1).Return(nil, errors.New(
+					fmt.Sprintf("Failed to delete message: error path: db.DeleteMessage, error: pq: Not found messages")))
+			},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Failed to delete message: Failed to delete message: error path: db.DeleteMessage, error: pq: Not found messages"}`,
+		},
+		{
+			name:                 "Error decode",
+			inputBody:            `{"message_ids": }`,
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageDelete) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Invalid request"}`,
+		},
+		{
+			name:                 "Request nil body",
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageDelete) {},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Empty request"}`,
+		},
+		{
+			name:      "Other error",
+			inputBody: `{"message_ids": [1]}`,
+			inputMessage: dto.MessageDelete{
+				MessageIds: &[]int64{1},
+			},
+			mockBehaviour: func(s *mockService.MockMessage, message dto.MessageDelete) {
+				s.EXPECT().DeleteMessage(message, 1).Return(nil, errors.New("some error"))
+			},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"Failed to delete message: some error"}`,
+		},
+		{
+			name:      "User id not found",
+			inputBody: `{"message_ids": [1]}`,
+			inputMessage: dto.MessageDelete{
+				MessageIds: &[]int64{1},
+			},
+			mockBehaviour:        func(s *mockService.MockMessage, message dto.MessageDelete) {},
+			unauthorized:         true,
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"status":"Error","error":"user id not found"}`,
+		},
+	}
+
+	// Итерируемся по нашей тестовой таблице
+	for _, tt := range testTable {
+		t.Run(tt.name, func(t *testing.T) {
+			// Инициализируем зависимости
+
+			//Инициализируем контролер для мока сервиса
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			// Создаём моки сервиса сообщений
+			mockMessage := mockService.NewMockMessage(ctrl)
+
+			// Передаём структуру сообщения
+			tt.mockBehaviour(mockMessage, tt.inputMessage)
+
+			// Создаём объект сервиса в который передадим наш мок сообщения
+			services := &service.Service{Message: mockMessage}
+
+			// Создаём экземпляр обработчика
+			handler := NewHandler(services)
+
+			// Мокируем логгер
+			mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
+
+			// Инициализируем сервер
+			r := chi.NewRouter()
+			r.Delete("/messages/delete", handler.MessageDelete(mockLog))
+
+			// Готовим тестовый запрос
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodDelete, "/messages/delete", strings.NewReader(tt.inputBody))
 
 			// Выполняем запрос
 			if tt.unauthorized {
