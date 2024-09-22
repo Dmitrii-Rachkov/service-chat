@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -30,30 +31,33 @@ import (
 
 func main() {
 	// Получаем конфиг из файла local.yaml
-	cfg := config.MustSetEnv()
+	cfg, errCfg := config.MustSetEnv()
+	if errCfg != nil {
+		log.Fatalf("Failed to set env vars: %v", errCfg)
+	}
 
 	// Создаём logger
-	log := logger.SetupLogger(cfg.Env)
+	customLog := logger.SetupLogger(cfg.Env)
 
 	// Накатываем миграцию базы данных
-	errMigrateUp := db.MigrateUp(cfg, log)
+	errMigrateUp := db.MigrateUp(cfg, customLog)
 	if errMigrateUp != nil {
-		log.Error("Failed to up migrate", logger.Err(errMigrateUp))
+		customLog.Error("Failed to up migrate", logger.Err(errMigrateUp))
 		os.Exit(1)
 	}
-	log.Info("Migrate Up is successful")
+	customLog.Info("Migrate Up is successful")
 
 	// Выводим в консоль информацию о запуске нашего приложения, параметры конфига и режиме работы logger
-	log.Info("Start service-chat", slog.String("env", cfg.Env))
-	log.Debug("Debug messages is on")
+	customLog.Info("Start service-chat", slog.String("env", cfg.Env))
+	customLog.Debug("Debug messages is on")
 
 	// Инициализируем базу данных
 	database, errDB := db.NewPostgresDB(cfg)
 	if errDB != nil {
-		log.Error("Failed to start database", logger.Err(errDB))
+		customLog.Error("Failed to start database", logger.Err(errDB))
 		os.Exit(1)
 	}
-	log.Info("Database initialization was successful")
+	customLog.Info("Database initialization was successful")
 
 	// Собираем наши слои проекта
 	repos := db.NewDB(database)
@@ -68,11 +72,11 @@ func main() {
 	// Для этого запускаем сервер в горутине
 	go func() {
 		// Запускаем сервер
-		if errRunServer := srv.Run(cfg, handlers.NewRouter(log)); errRunServer != nil {
-			log.Error("Failed to start server, error:", logger.Err(errRunServer))
+		if errRunServer := srv.Run(cfg, handlers.NewRouter(customLog)); errRunServer != nil {
+			customLog.Error("Failed to start server, error:", logger.Err(errRunServer))
 			os.Exit(1)
 		}
-		log.Info("Server started")
+		customLog.Info("Server started")
 	}()
 
 	// Поскольку сервер запускается в горутине, это не блокирует выполнение функции main и поэтому
@@ -88,14 +92,14 @@ func main() {
 	<-quit
 
 	// Информируем о завершении работы приложения и выходим из него
-	log.Info("Server is shutting down")
+	customLog.Info("Server is shutting down")
 	if err := srv.ShutDown(context.Background()); err != nil {
-		log.Error("Failed to shutdown server", logger.Err(err))
+		customLog.Error("Failed to shutdown server", logger.Err(err))
 	}
 
 	// Закрываем все соединения с бд
 	if err := database.Close(); err != nil {
-		log.Error("Failed to close database", logger.Err(err))
+		customLog.Error("Failed to close database", logger.Err(err))
 	}
 
 	// TODO: tests

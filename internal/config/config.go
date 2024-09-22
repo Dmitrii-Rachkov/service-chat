@@ -1,8 +1,8 @@
 package config
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -37,33 +37,33 @@ type Config struct {
 }
 
 // MustSetEnv - функция, которая прочитает файл с конфигом и создаст и заполнит объект Config
-func MustSetEnv() *Config {
+func MustSetEnv() (*Config, error) {
 	// Получаем путь до конфига
 	configPath := filepath.Join("./", "config", "local.yaml")
 	fmt.Println("configPath:", configPath)
 
 	// Проверяем существует ли файл с конфигом по указанному пути
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file does not exist in path: %s", configPath)
+		return nil, errors.New("config file doesn't exist")
 	}
 
 	// Объект конфига
 	var cfg Config
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatalf("cannot read config: %s", err)
+		return nil, errors.New("failed to read config: " + err.Error())
 	}
 
 	// Получаем переменные окружения из файла .env
 	if err := godotenv.Load(); err != nil {
-		log.Fatalf("error loading env variables: %s", err.Error())
+		return nil, errors.New("failed to load .env file: " + err.Error())
 	}
 
 	// Расшифровываем и устанавливаем пароль для базы данных
 	password, errDec := encryption.Decrypt(os.Getenv("DB_PASSWORD"))
 	if errDec != nil {
-		log.Fatalf("error decrypting your encrypted text: %s", errDec)
+		return nil, errors.New("failed to decrypt password: " + errDec.Error())
 	}
 	cfg.Database.Password = password
 
-	return &cfg
+	return &cfg, nil
 }
