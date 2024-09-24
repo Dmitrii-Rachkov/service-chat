@@ -22,7 +22,7 @@ func TestMustSetEnv_OK(t *testing.T) {
 			Host:        "clair_postgres",
 			Port:        "5432",
 			Username:    "postgres",
-			Password:    "qwerty",
+			Password:    "",
 			Name:        "db_chat",
 			Connections: 10,
 			SSLMode:     "disable",
@@ -62,6 +62,8 @@ func TestMustSetEnv_OK(t *testing.T) {
 
 	// Путь к созданному тестовому конфигу
 	cfgOKPath := filepath.Join(dir, "cfg_ok.yaml")
+
+	t.Setenv("MY_SECRET", "abc&1*~#^2^#s0^=)^^7%b34")
 
 	// Проверяем, что считался конфиг из файла и он верный
 	actualCfgOK, err := MustSetEnv(cfgOKPath)

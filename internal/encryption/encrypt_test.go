@@ -7,6 +7,7 @@ import (
 )
 
 func Test_mySecret(t *testing.T) {
+	t.Setenv("MY_SECRET", "abc&1*~#^2^#s0^=)^^7%b34")
 	exSecret := "abc&1*~#^2^#s0^=)^^7%b34"
 	acSecret, err := mySecret()
 
@@ -87,15 +88,18 @@ func TestEncrypt(t *testing.T) {
 			name:     "OK",
 			input:    "hello world",
 			expected: "AyVL7wcMVPcTbss=",
+			secret:   "abc&1*~#^2^#s0^=)^^7%b34",
 		},
 		{
 			name:     "OK empty string",
 			input:    "",
 			expected: "",
+			secret:   "abc&1*~#^2^#s0^=)^^7%b34",
 		},
 		{
 			name:     "OK nil string",
 			expected: "",
+			secret:   "abc&1*~#^2^#s0^=)^^7%b34",
 		},
 		{
 			name:     "Random secret",
@@ -127,6 +131,7 @@ func TestEncrypt(t *testing.T) {
 				assert.Empty(t, actual)
 				assert.Equal(t, err.Error(), tt.expected)
 			} else {
+				t.Setenv("MY_SECRET", tt.secret)
 				actual, err := Encrypt(tt.input)
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expected, actual)
@@ -147,15 +152,18 @@ func TestDecrypt(t *testing.T) {
 			name:     "OK",
 			input:    "AyVL7wcMVPcTbss=",
 			expected: "hello world",
+			secret:   "abc&1*~#^2^#s0^=)^^7%b34",
 		},
 		{
 			name:     "OK empty string",
 			input:    "",
 			expected: "",
+			secret:   "abc&1*~#^2^#s0^=)^^7%b34",
 		},
 		{
 			name:     "OK nil string",
 			expected: "",
+			secret:   "abc&1*~#^2^#s0^=)^^7%b34",
 		},
 		{
 			name:     "Random secret",
@@ -187,6 +195,7 @@ func TestDecrypt(t *testing.T) {
 				assert.Empty(t, actual)
 				assert.Equal(t, err.Error(), tt.expected)
 			} else {
+				t.Setenv("MY_SECRET", tt.secret)
 				actual, err := Decrypt(tt.input)
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expected, actual)

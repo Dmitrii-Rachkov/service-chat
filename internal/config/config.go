@@ -3,13 +3,9 @@ package config
 import (
 	"errors"
 	"os"
-	"path"
-	"runtime"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/joho/godotenv"
-
 	"service-chat/internal/encryption"
 )
 
@@ -53,17 +49,6 @@ func MustSetEnv(configPath string) (*Config, error) {
 	var cfg Config
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
 		return nil, errors.New("failed to read config: " + err.Error())
-	}
-
-	// Ищем откуда запускается функция
-	_, filename, _, _ := runtime.Caller(0)
-
-	// Находим корневую директорию
-	dir := path.Join(path.Dir(filename), "../../")
-
-	// Получаем переменные окружения из файла .env
-	if err := godotenv.Load(dir + "/.env"); err != nil {
-		return nil, errors.New("failed to load .env file: " + err.Error())
 	}
 
 	// Достаём пароль из .env

@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"syscall"
 
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 
 	"service-chat/internal/config"
@@ -19,6 +20,13 @@ import (
 	"service-chat/internal/service"
 	"service-chat/server"
 )
+
+func init() {
+	// loads values from .env into the system
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("No .env file found")
+	}
+}
 
 // @title Service Chat
 // @version 1.0
