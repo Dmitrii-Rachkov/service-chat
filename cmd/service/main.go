@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	_ "github.com/lib/pq"
@@ -30,8 +32,12 @@ import (
 // @name Authorization
 
 func main() {
+	// Получаем путь до конфига
+	configPath := filepath.Join("./", "config", "local.yaml")
+	fmt.Println("configPath:", configPath)
+
 	// Получаем конфиг из файла local.yaml
-	cfg, errCfg := config.MustSetEnv()
+	cfg, errCfg := config.MustSetEnv(configPath)
 	if errCfg != nil {
 		log.Fatalf("Failed to set env vars: %v", errCfg)
 	}
@@ -101,7 +107,4 @@ func main() {
 	if err := database.Close(); err != nil {
 		customLog.Error("Failed to close database", logger.Err(err))
 	}
-
-	// TODO: tests
-	// делаем unit тесты
 }

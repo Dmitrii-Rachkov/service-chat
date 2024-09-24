@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
+	"runtime"
 
 	"github.com/joho/godotenv"
 )
@@ -16,7 +18,14 @@ var bytes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 0
 
 // Достаём ключ шифрования из переменных окружения
 func mySecret() string {
-	if err := godotenv.Load(); err != nil {
+	// Ищем откуда запускается функция
+	_, filename, _, _ := runtime.Caller(0)
+
+	// Находим директорию корневую директорию
+	dir := path.Join(path.Dir(filename), "../../")
+
+	// Получаем переменные окружения из файла .env
+	if err := godotenv.Load(dir + "/.env"); err != nil {
 		log.Fatalf("error loading env variables: %s", err.Error())
 	}
 
