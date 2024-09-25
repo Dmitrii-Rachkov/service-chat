@@ -14,6 +14,7 @@ make up-service
 https://blog.jetbrains.com/go/2020/05/06/debugging-a-go-application-inside-a-docker-container/
 https://blog.jetbrains.com/go/2020/05/08/running-go-applications-using-docker-compose-in-goland/
 ### 4. Также в файле local.yaml необходимо указать параметр для базы данных - host: clair-postgres-debug
+### 5. В настройках Edit Configuration нужно добавить флаг Build - Always
 
 # Swagger документация
 ### 1. Можно посмотреть по ссылке:
