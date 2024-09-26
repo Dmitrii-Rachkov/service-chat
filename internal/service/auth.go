@@ -34,6 +34,11 @@ func NewAuthService(repo db.Authorization) *AuthService {
 
 // CreateUser - реализуем интерфейс функции CreateUser передав данные со слоя бизнес логики на слой базы данных
 func (s *AuthService) CreateUser(user dto.SignUpRequest) (int, error) {
+	// Если пустой запрос
+	if user.Username == "" || user.Password == "" {
+		return 0, fmt.Errorf("username or password is empty")
+	}
+
 	// Шифруем пароль, чтобы хранить в базе не в открытом виде
 	passwordHash, err := encryption.Encrypt(user.Password)
 	if err != nil {
@@ -51,6 +56,11 @@ func (s *AuthService) CreateUser(user dto.SignUpRequest) (int, error) {
 
 // GenerateToken - реализуем создание jwt token
 func (s *AuthService) GenerateToken(user dto.SignInRequest) (string, error) {
+	// Если пустой запрос
+	if user.Username == "" || user.Password == "" {
+		return "", fmt.Errorf("username or password is empty")
+	}
+
 	// Получаем пользователя из базы данных
 	dataDB := entity.User{
 		Username: user.Username,

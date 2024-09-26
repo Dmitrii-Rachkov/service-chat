@@ -6,6 +6,9 @@ import (
 	"service-chat/internal/db/entity"
 )
 
+// Генерируем моки для интерфейсов слоя базы данных
+//go:generate mockgen -source=db.go -destination=mocks/db_mock.go
+
 // Здесь интерфейсы для слоя базы данных нашего приложения
 
 // Authorization - интерфейс авторизации
