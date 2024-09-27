@@ -22,6 +22,12 @@ func NewAuthPostgres(db *sql.DB) *AuthPostgres {
 // CreateUser - реализуем интерфейс функции CreateUser, здесь мы непосредственно записываем пользователя в базу данных
 func (r *AuthPostgres) CreateUser(user entity.User) (int, error) {
 	const op = "db.CreateUser"
+
+	// Если пустой запрос
+	if user.Username == "" || user.Password == "" {
+		return 0, fmt.Errorf("error path: %s, error: empty username or password", op)
+	}
+
 	var id int
 	// Скелет sql запроса в базу данных
 	stmt, err := r.db.Prepare(`INSERT INTO "user" (username, password_hash) VALUES ($1, $2) RETURNING id`)
@@ -49,6 +55,12 @@ func (r *AuthPostgres) CreateUser(user entity.User) (int, error) {
 
 func (r *AuthPostgres) GetUser(user entity.User) (*entity.User, error) {
 	const op = "db.GetUser"
+
+	// Если пустой username
+	if user.Username == "" {
+		return nil, fmt.Errorf("error path: %s, error: empty username", op)
+	}
+
 	var userDB entity.User
 	// Скелет sql запроса в базу данных
 	stmt, err := r.db.Prepare(`SELECT id, username, password_hash FROM "user" WHERE username = $1`)
