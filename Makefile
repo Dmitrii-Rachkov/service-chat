@@ -14,3 +14,7 @@ postgres-migrate-down:
 cert:
 	openssl genrsa -out internal/service/mocks/id_rsa 4096
 	openssl rsa -in internal/service/mocks/id_rsa -pubout -out internal/service/mocks/id_rsa.pub
+
+.PHONY: run test
+run test:
+	go test ./... -coverprofile=coverage.txt && go tool cover -html coverage.txt -o index.html
