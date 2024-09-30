@@ -249,6 +249,7 @@ func (h *Handler) MessageDelete(log *slog.Logger) http.HandlerFunc {
 		if errCtx != nil {
 			log.Error("failed to get userID from context")
 			render.JSON(w, r, Error(errCtx.Error()))
+			return
 		}
 
 		// Структура для записи входных данных из JSON от пользователя
@@ -279,8 +280,8 @@ func (h *Handler) MessageDelete(log *slog.Logger) http.HandlerFunc {
 		render.JSON(w, r, Response{
 			Status:     StatusOK,
 			Message:    "Result of deleted messages",
-			DelMsgList: msgDel},
-		)
+			DelMsgList: msgDel,
+		})
 		return
 	}
 }

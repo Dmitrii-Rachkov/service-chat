@@ -9,6 +9,7 @@ definitions:
       users:
         items:
           type: integer
+        minItems: 2
         type: array
     required:
     - chat_name
@@ -19,6 +20,7 @@ definitions:
       chat_ids:
         items:
           type: integer
+        minItems: 1
         type: array
     required:
     - chat_ids
@@ -48,6 +50,7 @@ definitions:
       message_ids:
         items:
           type: integer
+        minItems: 1
         type: array
     required:
     - message_ids

@@ -651,6 +651,7 @@ const docTemplate = `{
                 },
                 "users": {
                     "type": "array",
+                    "minItems": 2,
                     "items": {
                         "type": "integer"
                     }
@@ -665,6 +666,7 @@ const docTemplate = `{
             "properties": {
                 "chat_ids": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "type": "integer"
                     }
@@ -709,6 +711,7 @@ const docTemplate = `{
             "properties": {
                 "message_ids": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "type": "integer"
                     }

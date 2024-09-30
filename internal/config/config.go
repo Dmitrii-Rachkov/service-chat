@@ -1,15 +1,11 @@
 package config
 
 import (
-	"fmt"
-	"log"
+	"errors"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/joho/godotenv"
-
 	"service-chat/internal/encryption"
 )
 
@@ -18,52 +14,52 @@ type Config struct {
 	// Тег yaml:"env" определяет какое имя будет у параметра Env в yaml файле если мы оттуда будем считывать данные
 	// env-default:"local" - окружение по умолчанию
 	// yaml:"connections" - кол-во одновременных подключений к базе данных задано в local.yaml
-	Env      string `yaml:"env" env-default:"local" env-description:"Environment"`
-	Database struct {
-		Host        string `yaml:"host"`
-		Port        string `yaml:"port"`
-		Username    string `yaml:"username"`
-		Password    string `yaml:"password"`
-		Name        string `yaml:"name"`
-		Connections int    `yaml:"connections"`
-		SSLMode     string `yaml:"sslmode"`
-	} `yaml:"database"`
-	Server struct {
-		Host        string        `yaml:"host" env-default:"localhost"`
-		Port        string        `yaml:"port"`
-		Timeout     time.Duration `yaml:"timeout" env-default:"5s"`
-		IdleTimeout time.Duration `yaml:"idleTimeout" env-default:"60s"`
-	} `yaml:"server"`
+	Env      string   `yaml:"env" env-default:"local" env-description:"Environment"`
+	Database Database `yaml:"database"`
+	Server   Server   `yaml:"server"`
+}
+
+// Database - структура конфига базы данных
+type Database struct {
+	Host        string `yaml:"host"`
+	Port        string `yaml:"port"`
+	Username    string `yaml:"username"`
+	Password    string `yaml:"password"`
+	Name        string `yaml:"name"`
+	Connections int    `yaml:"connections"`
+	SSLMode     string `yaml:"sslmode"`
+}
+
+// Server - структура конфига сервера
+type Server struct {
+	Host        string        `yaml:"host" env-default:"localhost"`
+	Port        string        `yaml:"port"`
+	Timeout     time.Duration `yaml:"timeout" env-default:"5s"`
+	IdleTimeout time.Duration `yaml:"idleTimeout" env-default:"60s"`
 }
 
 // MustSetEnv - функция, которая прочитает файл с конфигом и создаст и заполнит объект Config
-func MustSetEnv() *Config {
-	// Получаем путь до конфига
-	configPath := filepath.Join("./", "config", "local.yaml")
-	fmt.Println("configPath:", configPath)
-
+func MustSetEnv(configPath string) (*Config, error) {
 	// Проверяем существует ли файл с конфигом по указанному пути
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file does not exist in path: %s", configPath)
+		return nil, errors.New("config file doesn't exist")
 	}
 
 	// Объект конфига
 	var cfg Config
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatalf("cannot read config: %s", err)
+		return nil, errors.New("failed to read config: " + err.Error())
 	}
 
-	// Получаем переменные окружения из файла .env
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("error loading env variables: %s", err.Error())
-	}
+	// Достаём пароль из .env
+	passFromEnv := os.Getenv("DB_PASSWORD")
 
 	// Расшифровываем и устанавливаем пароль для базы данных
-	password, errDec := encryption.Decrypt(os.Getenv("DB_PASSWORD"))
+	password, errDec := encryption.Decrypt(passFromEnv)
 	if errDec != nil {
-		log.Fatalf("error decrypting your encrypted text: %s", errDec)
+		return nil, errors.New("failed to decrypt password: " + errDec.Error())
 	}
 	cfg.Database.Password = password
 
-	return &cfg
+	return &cfg, nil
 }

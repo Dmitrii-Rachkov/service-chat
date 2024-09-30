@@ -14,6 +14,7 @@ make up-service
 https://blog.jetbrains.com/go/2020/05/06/debugging-a-go-application-inside-a-docker-container/
 https://blog.jetbrains.com/go/2020/05/08/running-go-applications-using-docker-compose-in-goland/
 ### 4. Также в файле local.yaml необходимо указать параметр для базы данных - host: clair-postgres-debug
+### 5. В настройках Edit Configuration нужно добавить флаг Build - Always
 
 # Swagger документация
 ### 1. Можно посмотреть по ссылке:
@@ -40,6 +41,14 @@ http://localhost:9000/swagger/index.html/
 ### 3.8 /validate - проверка параметров запроса
 ### 3.9 /dto - сущности для анализа запросов, в них мы складываем информацию от пользователя
 ## 4. server/server - всё для запуска и остановки сервера
+
+# Запуск unit тестов
+### 1. Команда для запуска тестов с статистикой покрытия
+```bash
+make run test
+```
+### 2. В корне проекта появится файл index.html с статистикой покрытия. Файл можно открыть прямо в IDE или в браузере.
+
 
 # План проекта
 

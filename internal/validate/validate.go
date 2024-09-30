@@ -41,7 +41,7 @@ func BaseValidate(log *slog.Logger, body io.ReadCloser, req interface{}) *Result
 		return &Result{ErrMsg: errDecode}
 	}
 
-	// Проверяем, что обязательные поля Username и Password заполнены верно
+	// Проверяем поля запроса на соответствие заданным правилам в dto
 	if err = validator.New().Struct(req); err != nil {
 		var validateErr validator.ValidationErrors
 		match := errors.As(err, &validateErr)

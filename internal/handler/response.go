@@ -21,7 +21,7 @@ type Response struct {
 	MessagesList []entity.Message      `json:"messages_list,omitempty"`
 	ChatsList    []entity.Chat         `json:"chats_list,omitempty"`
 	DelChatsList []entity.DeletedChats `json:"del_chats_list,omitempty"`
-	DelMsgList   []entity.DelMsg  `json:"del_msg_list,omitempty"`
+	DelMsgList   []entity.DelMsg       `json:"del_msg_list,omitempty"`
 }
 
 func OK(msg string) Response {
@@ -46,9 +46,9 @@ func ValidationError(errs validator.ValidationErrors) Response {
 		case "required":
 			errMsgs = append(errMsgs, fmt.Sprintf("Field %s is a required field", err.Field()))
 		case "max":
-			errMsgs = append(errMsgs, fmt.Sprintf("Field %s cannot exceed 20 characters", err.Field()))
+			errMsgs = append(errMsgs, fmt.Sprintf("Field %s cannot exceed %s characters", err.Field(), err.Param()))
 		case "min":
-			errMsgs = append(errMsgs, fmt.Sprintf("Field %s must contain at least 6 characters", err.Field()))
+			errMsgs = append(errMsgs, fmt.Sprintf("Field %s must contain at least %s characters", err.Field(), err.Param()))
 		case "containsany":
 			errMsgs = append(errMsgs, fmt.Sprintf("Field %s must contain Latin letters and Arabic numerals, as well as the symbols @#$&*()", err.Field()))
 		case "excludesall":
