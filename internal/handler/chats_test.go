@@ -24,6 +24,30 @@ func TestHandler_ChatAdd(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehaviour func(s *mockService.MockChat, chat dto.ChatAdd)
 
+	// Инициализируем зависимости
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Создаём моки сервиса чат
+	mockChat := mockService.NewMockChat(ctrl)
+
+	// Создаём объект сервиса в который передадим наш мок чата
+	services := &service.Service{Chat: mockChat}
+
+	// Создаём экземпляр обработчика
+	handler := NewHandler(services)
+
+	// Мокируем логгер
+	mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
+
+	// Инициализируем сервер
+
+	// Инициализируем тестовый endPoint по которому будет вызываться тестовый обработчик
+	r := chi.NewRouter()
+	r.Post("/chats/add", handler.ChatAdd(mockLog))
+
 	// Тестовая таблица с данными
 	testTable := []struct {
 		name                 string
@@ -166,32 +190,8 @@ func TestHandler_ChatAdd(t *testing.T) {
 	// Итерируемся по нашей тестовой таблице
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			// Инициализируем зависимости
-
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			// Создаём моки сервиса чат
-			mockChat := mockService.NewMockChat(ctrl)
-
 			// Передаём структуру чата
 			tt.mockBehavior(mockChat, tt.inputChat)
-
-			// Создаём объект сервиса в который передадим наш мок чата
-			services := &service.Service{Chat: mockChat}
-
-			// Создаём экземпляр обработчика
-			handler := NewHandler(services)
-
-			// Мокируем логгер
-			mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
-
-			// Инициализируем сервер
-
-			// Инициализируем тестовый endPoint по которому будет вызываться тестовый обработчик
-			r := chi.NewRouter()
-			r.Post("/chats/add", handler.ChatAdd(mockLog))
 
 			// Готовим тестовый запрос
 			w := httptest.NewRecorder()
@@ -210,6 +210,28 @@ func TestHandler_ChatAdd(t *testing.T) {
 func TestHandler_ChatDelete(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehavior func(s *mockService.MockChat, chat dto.ChatDelete)
+
+	// Инициализируем зависимости
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Создаём моки сервиса чат
+	mockChat := mockService.NewMockChat(ctrl)
+
+	// Создаём объект сервиса в который передадим наш мок чата
+	services := &service.Service{Chat: mockChat}
+
+	// Создаём экземпляр обработчика
+	handler := NewHandler(services)
+
+	// Мокируем логгер
+	mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
+
+	// Инициализируем сервер
+	r := chi.NewRouter()
+	r.Delete("/chats/delete", handler.ChatDelete(mockLog))
 
 	// Тестовая таблица с данными
 	testTable := []struct {
@@ -306,30 +328,8 @@ func TestHandler_ChatDelete(t *testing.T) {
 	// Итерируемся по нашей тестовой таблице
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			// Инициализируем зависимости
-
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			// Создаём моки сервиса чат
-			mockChat := mockService.NewMockChat(ctrl)
-
 			// Передаём структуру чата
 			tt.mockBehavior(mockChat, tt.inputChat)
-
-			// Создаём объект сервиса в который передадим наш мок чата
-			services := &service.Service{Chat: mockChat}
-
-			// Создаём экземпляр обработчика
-			handler := NewHandler(services)
-
-			// Мокируем логгер
-			mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
-
-			// Инициализируем сервер
-			r := chi.NewRouter()
-			r.Delete("/chats/delete", handler.ChatDelete(mockLog))
 
 			// Готовим тестовый запрос
 			w := httptest.NewRecorder()
@@ -349,6 +349,28 @@ func TestHandler_ChatGet(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehavior func(s *mockService.MockChat, chat dto.ChatGet)
 	var userID int64 = 1
+
+	// Инициализируем зависимости
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Создаём моки сервиса чат
+	mockChat := mockService.NewMockChat(ctrl)
+
+	// Создаём объект сервиса в который передадим наш мок чата
+	services := &service.Service{Chat: mockChat}
+
+	// Создаём экземпляр обработчика
+	handler := NewHandler(services)
+
+	// Мокируем логгер
+	mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
+
+	// Инициализируем сервер
+	r := chi.NewRouter()
+	r.Post("/chats/get", handler.ChatGet(mockLog))
 
 	// Тестовая таблица с данными
 	testTable := []struct {
@@ -472,30 +494,8 @@ func TestHandler_ChatGet(t *testing.T) {
 	// Итерируемся по нашей тестовой таблице
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			// Инициализируем зависимости
-
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			// Создаём моки сервиса чат
-			mockChat := mockService.NewMockChat(ctrl)
-
 			// Передаём структуру чата
 			tt.mockBehavior(mockChat, tt.inputChat)
-
-			// Создаём объект сервиса в который передадим наш мок чата
-			services := &service.Service{Chat: mockChat}
-
-			// Создаём экземпляр обработчика
-			handler := NewHandler(services)
-
-			// Мокируем логгер
-			mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
-
-			// Инициализируем сервер
-			r := chi.NewRouter()
-			r.Post("/chats/get", handler.ChatGet(mockLog))
 
 			// Готовим тестовый запрос
 			w := httptest.NewRecorder()

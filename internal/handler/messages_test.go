@@ -25,6 +25,28 @@ func TestHandler_MessageAdd(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehaviour func(s *mockService.MockMessage, message dto.MessageAdd)
 
+	// Инициализируем зависимости
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Создаём моки сервиса сообщений
+	mockMessage := mockService.NewMockMessage(ctrl)
+
+	// Создаём объект сервиса в который передадим наш мок сообщения
+	services := &service.Service{Message: mockMessage}
+
+	// Создаём экземпляр обработчика
+	handler := NewHandler(services)
+
+	// Мокируем логгер
+	mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
+
+	// Инициализируем сервер
+	r := chi.NewRouter()
+	r.Post("/messages/add", handler.MessageAdd(mockLog))
+
 	// Тестовая таблица с данными
 	testTable := []struct {
 		name                 string
@@ -159,30 +181,8 @@ func TestHandler_MessageAdd(t *testing.T) {
 	// Итерируемся по нашей тестовой таблице
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			// Инициализируем зависимости
-
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			// Создаём моки сервиса сообщений
-			mockMessage := mockService.NewMockMessage(ctrl)
-
 			// Передаём структуру сообщения
 			tt.mockBehaviour(mockMessage, tt.inputMessage)
-
-			// Создаём объект сервиса в который передадим наш мок сообщения
-			services := &service.Service{Message: mockMessage}
-
-			// Создаём экземпляр обработчика
-			handler := NewHandler(services)
-
-			// Мокируем логгер
-			mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
-
-			// Инициализируем сервер
-			r := chi.NewRouter()
-			r.Post("/messages/add", handler.MessageAdd(mockLog))
 
 			// Готовим тестовый запрос
 			w := httptest.NewRecorder()
@@ -209,6 +209,28 @@ func TestHandler_MessageGet(t *testing.T) {
 		limit  = int64(10)
 		offset = int64(0)
 	)
+
+	// Инициализируем зависимости
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Создаём моки сервиса сообщений
+	mockMessage := mockService.NewMockMessage(ctrl)
+
+	// Создаём объект сервиса в который передадим наш мок сообщения
+	services := &service.Service{Message: mockMessage}
+
+	// Создаём экземпляр обработчика
+	handler := NewHandler(services)
+
+	// Мокируем логгер
+	mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
+
+	// Инициализируем сервер
+	r := chi.NewRouter()
+	r.Post("/messages/get", handler.MessageGet(mockLog))
 
 	// Тестовая таблица с данными
 	testTable := []struct {
@@ -416,30 +438,8 @@ func TestHandler_MessageGet(t *testing.T) {
 	// Итерируемся по нашей тестовой таблице
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			// Инициализируем зависимости
-
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			// Создаём моки сервиса сообщений
-			mockMessage := mockService.NewMockMessage(ctrl)
-
 			// Передаём структуру сообщения
 			tt.mockBehaviour(mockMessage, tt.inputMessage)
-
-			// Создаём объект сервиса в который передадим наш мок сообщения
-			services := &service.Service{Message: mockMessage}
-
-			// Создаём экземпляр обработчика
-			handler := NewHandler(services)
-
-			// Мокируем логгер
-			mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
-
-			// Инициализируем сервер
-			r := chi.NewRouter()
-			r.Post("/messages/get", handler.MessageGet(mockLog))
 
 			// Готовим тестовый запрос
 			w := httptest.NewRecorder()
@@ -462,6 +462,28 @@ func TestHandler_MessageGet(t *testing.T) {
 func TestHandler_MessageUpdate(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehaviour func(s *mockService.MockMessage, message dto.MessageUpdate)
+
+	// Инициализируем зависимости
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Создаём моки сервиса сообщений
+	mockMessage := mockService.NewMockMessage(ctrl)
+
+	// Создаём объект сервиса в который передадим наш мок сообщения
+	services := &service.Service{Message: mockMessage}
+
+	// Создаём экземпляр обработчика
+	handler := NewHandler(services)
+
+	// Мокируем логгер
+	mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
+
+	// Инициализируем сервер
+	r := chi.NewRouter()
+	r.Put("/messages/update", handler.MessageUpdate(mockLog))
 
 	// Тестовая таблица с данными
 	testTable := []struct {
@@ -590,30 +612,8 @@ func TestHandler_MessageUpdate(t *testing.T) {
 	// Итерируемся по нашей тестовой таблице
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			// Инициализируем зависимости
-
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			// Создаём моки сервиса сообщений
-			mockMessage := mockService.NewMockMessage(ctrl)
-
 			// Передаём структуру сообщения
 			tt.mockBehaviour(mockMessage, tt.inputMessage)
-
-			// Создаём объект сервиса в который передадим наш мок сообщения
-			services := &service.Service{Message: mockMessage}
-
-			// Создаём экземпляр обработчика
-			handler := NewHandler(services)
-
-			// Мокируем логгер
-			mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
-
-			// Инициализируем сервер
-			r := chi.NewRouter()
-			r.Put("/messages/update", handler.MessageUpdate(mockLog))
 
 			// Готовим тестовый запрос
 			w := httptest.NewRecorder()
@@ -636,6 +636,28 @@ func TestHandler_MessageUpdate(t *testing.T) {
 func TestHandler_MessageDelete(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehaviour func(s *mockService.MockMessage, message dto.MessageDelete)
+
+	// Инициализируем зависимости
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Создаём моки сервиса сообщений
+	mockMessage := mockService.NewMockMessage(ctrl)
+
+	// Создаём объект сервиса в который передадим наш мок сообщения
+	services := &service.Service{Message: mockMessage}
+
+	// Создаём экземпляр обработчика
+	handler := NewHandler(services)
+
+	// Мокируем логгер
+	mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
+
+	// Инициализируем сервер
+	r := chi.NewRouter()
+	r.Delete("/messages/delete", handler.MessageDelete(mockLog))
 
 	// Тестовая таблица с данными
 	testTable := []struct {
@@ -757,30 +779,8 @@ func TestHandler_MessageDelete(t *testing.T) {
 	// Итерируемся по нашей тестовой таблице
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			// Инициализируем зависимости
-
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			// Создаём моки сервиса сообщений
-			mockMessage := mockService.NewMockMessage(ctrl)
-
 			// Передаём структуру сообщения
 			tt.mockBehaviour(mockMessage, tt.inputMessage)
-
-			// Создаём объект сервиса в который передадим наш мок сообщения
-			services := &service.Service{Message: mockMessage}
-
-			// Создаём экземпляр обработчика
-			handler := NewHandler(services)
-
-			// Мокируем логгер
-			mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
-
-			// Инициализируем сервер
-			r := chi.NewRouter()
-			r.Delete("/messages/delete", handler.MessageDelete(mockLog))
 
 			// Готовим тестовый запрос
 			w := httptest.NewRecorder()

@@ -24,6 +24,31 @@ func TestHandler_SignUp(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehaviour func(s *mockService.MockAuthorization, user dto.SignUpRequest)
 
+	// Инициализируем зависимости
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	// Завершаем работу контролера после выполнения каждого теста
+	defer ctrl.Finish()
+
+	// Создаём моки сервиса авторизации
+	mockAuth := mockService.NewMockAuthorization(ctrl)
+
+	// Создаём объект сервиса в который передадим наш мок авторизации
+	services := &service.Service{Authorization: mockAuth}
+
+	// Создаём экземпляр обработчика
+	handler := NewHandler(services)
+
+	// Мокируем логгер
+	mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
+
+	// Инициализируем сервер
+
+	// Инициализируем тестовый endPoint по которому будет вызываться тестовый обработчик
+	r := chi.NewRouter()
+	r.Post("/sign-up", handler.SignUp(mockLog))
+
 	// Тестовая таблица с данными
 	testTable := []struct {
 		name                 string
@@ -161,33 +186,8 @@ func TestHandler_SignUp(t *testing.T) {
 	for _, tt := range testTable {
 		// Запускаем тесты параллельно
 		t.Run(tt.name, func(t *testing.T) {
-			// Инициализируем зависимости
-
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			// Завершаем работу контролера после выполнения каждого теста
-			defer ctrl.Finish()
-
-			// Создаём моки сервиса авторизации
-			mockAuth := mockService.NewMockAuthorization(ctrl)
-
 			// Передаём структуру пользователя
 			tt.mockBehavior(mockAuth, tt.inputUser)
-
-			// Создаём объект сервиса в который передадим наш мок авторизации
-			services := &service.Service{Authorization: mockAuth}
-
-			// Создаём экземпляр обработчика
-			handler := NewHandler(services)
-
-			// Мокируем логгер
-			mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
-
-			// Инициализируем сервер
-
-			// Инициализируем тестовый endPoint по которому будет вызываться тестовый обработчик
-			r := chi.NewRouter()
-			r.Post("/sign-up", handler.SignUp(mockLog))
 
 			// Готовим тестовый запрос
 			w := httptest.NewRecorder()
@@ -207,6 +207,30 @@ func TestHandler_SignUp(t *testing.T) {
 func TestHandler_SignIn(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehavior func(*mockService.MockAuthorization, dto.SignInRequest)
+
+	// Инициализируем зависимости
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Создаём моки сервиса авторизации
+	mockAuth := mockService.NewMockAuthorization(ctrl)
+
+	// Создаём объект сервиса в который передадим наш мок авторизации
+	services := &service.Service{Authorization: mockAuth}
+
+	// Создаём экземпляр обработчика
+	handler := NewHandler(services)
+
+	// Мокируем логгер
+	mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
+
+	// Инициализируем сервер
+
+	// Инициализируем тестовый endPoint по которому будет вызываться тестовый обработчик
+	r := chi.NewRouter()
+	r.Post("/sign-in", handler.SignIn(mockLog))
 
 	// Тестовая таблица с данными
 	testTable := []struct {
@@ -343,32 +367,8 @@ func TestHandler_SignIn(t *testing.T) {
 	// Итерируемся по нашей тестовой таблице
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			// Инициализируем зависимости
-
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			// Создаём моки сервиса авторизации
-			mockAuth := mockService.NewMockAuthorization(ctrl)
-
 			// Передаём структуру пользователя
 			tt.mockBehavior(mockAuth, tt.inputUser)
-
-			// Создаём объект сервиса в который передадим наш мок авторизации
-			services := &service.Service{Authorization: mockAuth}
-
-			// Создаём экземпляр обработчика
-			handler := NewHandler(services)
-
-			// Мокируем логгер
-			mockLog := slog.New(slog.NewJSONHandler(io.Discard, nil))
-
-			// Инициализируем сервер
-
-			// Инициализируем тестовый endPoint по которому будет вызываться тестовый обработчик
-			r := chi.NewRouter()
-			r.Post("/sign-in", handler.SignIn(mockLog))
 
 			// Готовим тестовый запрос
 			w := httptest.NewRecorder()

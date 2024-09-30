@@ -16,6 +16,10 @@ func TestNewHandler(t *testing.T) {
 	// Определяем функцию для создания мока сервиса
 	type mockBehaviour func(ctrl *gomock.Controller) *service.Service
 
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	// Тестовая таблица с данными
 	testTable := []struct {
 		name     string
@@ -65,9 +69,6 @@ func TestNewHandler(t *testing.T) {
 
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			// Создаём моки сервиса
 			services := tt.mockServ(ctrl)
@@ -84,6 +85,10 @@ func TestNewHandler(t *testing.T) {
 func TestHandler_NewRouter(t *testing.T) {
 	// Определяем функцию для создания мока сервиса
 	type mockBehaviour func(ctrl *gomock.Controller) *service.Service
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	// Тестовая таблица с данными
 	testTable := []struct {
@@ -109,10 +114,6 @@ func TestHandler_NewRouter(t *testing.T) {
 	// Итерируемся по нашей тестовой таблице
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
 			// Создаём моки сервиса
 			services := tt.mockServ(ctrl)
 

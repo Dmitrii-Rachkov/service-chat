@@ -22,6 +22,34 @@ func TestHandler_AuthMiddleware(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehaviour func(s *mockService.MockAuthorization, token string)
 
+	// Инициализируем зависимости
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	// Завершаем работу контролера после выполнения каждого теста
+	defer ctrl.Finish()
+
+	// Создаём моки сервиса авторизации
+	mockAuth := mockService.NewMockAuthorization(ctrl)
+
+	// Создаём объект сервиса в который передадим наш мок авторизации
+	services := &service.Service{Authorization: mockAuth}
+
+	// Создаём экземпляр обработчика
+	handler := NewHandler(services)
+
+	// Инициализируем сервер
+
+	// Инициализируем тестовый endPoint, в котором используем AuthMiddleware
+	// В этом endPoint из контекста будем забирать userID и записывать в ответ
+	r := chi.NewRouter()
+	r.Use(handler.AuthMiddleware)
+
+	r.Post("/protected", func(w http.ResponseWriter, r *http.Request) {
+		idCtx, _ := GetUserID(r.Context())
+		render.JSON(w, r, OK(strconv.Itoa(idCtx)))
+	})
+
 	testTable := []struct {
 		name                 string
 		headerName           string
@@ -87,36 +115,8 @@ func TestHandler_AuthMiddleware(t *testing.T) {
 	for _, tt := range testTable {
 		// Запускаем тесты параллельно
 		t.Run(tt.name, func(t *testing.T) {
-			// Инициализируем зависимости
-
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			// Завершаем работу контролера после выполнения каждого теста
-			defer ctrl.Finish()
-
-			// Создаём моки сервиса авторизации
-			mockAuth := mockService.NewMockAuthorization(ctrl)
-
 			// Передаём токен пользователя
 			tt.mockBehavior(mockAuth, tt.token)
-
-			// Создаём объект сервиса в который передадим наш мок авторизации
-			services := &service.Service{Authorization: mockAuth}
-
-			// Создаём экземпляр обработчика
-			handler := NewHandler(services)
-
-			// Инициализируем сервер
-
-			// Инициализируем тестовый endPoint, в котором используем AuthMiddleware
-			// В этом endPoint из контекста будем забирать userID и записывать в ответ
-			r := chi.NewRouter()
-			r.Use(handler.AuthMiddleware)
-
-			r.Post("/protected", func(w http.ResponseWriter, r *http.Request) {
-				idCtx, _ := GetUserID(r.Context())
-				render.JSON(w, r, OK(strconv.Itoa(idCtx)))
-			})
 
 			// Формируем запрос у которого в headers есть токен авторизации
 			w := httptest.NewRecorder()

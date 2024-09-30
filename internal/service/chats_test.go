@@ -17,6 +17,20 @@ func TestChatService_CreateChat(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehaviour func(s *mockRepo.MockChat, dataDB entity.ChatAdd)
 
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	// Завершаем работу контролера после выполнения каждого теста
+	defer ctrl.Finish()
+
+	// Создаём моки базы данных чата
+	mockChat := mockRepo.NewMockChat(ctrl)
+
+	// Создаём объект базы данных в который передадим наш мок чата
+	repository := &db.DB{Chat: mockChat}
+
+	// Создаём экземпляр сервиса чат
+	serviceChat := NewChatService(repository)
+
 	tests := []struct {
 		name    string
 		inChat  dto.ChatAdd
@@ -111,22 +125,8 @@ func TestChatService_CreateChat(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			// Завершаем работу контролера после выполнения каждого теста
-			defer ctrl.Finish()
-
-			// Создаём моки базы данных чата
-			mockChat := mockRepo.NewMockChat(ctrl)
-
 			// Передаём структуру чата
 			tt.mock(mockChat, tt.dataDB)
-
-			// Создаём объект базы данных в который передадим наш мок чата
-			repository := &db.DB{Chat: mockChat}
-
-			// Создаём экземпляр сервиса чат
-			serviceChat := NewChatService(repository)
 
 			// Проверяем ожидаемый и актуальный результат
 			acID, acErr := serviceChat.CreateChat(tt.inChat)
@@ -141,6 +141,20 @@ func TestChatService_GetChat(t *testing.T) {
 	type mockBehaviour func(s *mockRepo.MockChat, dataDB entity.ChatGet)
 	userID := int64(1)
 	userEmpty := int64(0)
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	// Завершаем работу контролера после выполнения каждого теста
+	defer ctrl.Finish()
+
+	// Создаём моки базы данных чата
+	mockChat := mockRepo.NewMockChat(ctrl)
+
+	// Создаём объект базы данных в который передадим наш мок чата
+	repository := &db.DB{Chat: mockChat}
+
+	// Создаём экземпляр сервиса чат
+	serviceChat := NewChatService(repository)
 
 	tests := []struct {
 		name    string
@@ -263,22 +277,8 @@ func TestChatService_GetChat(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			// Завершаем работу контролера после выполнения каждого теста
-			defer ctrl.Finish()
-
-			// Создаём моки базы данных чата
-			mockChat := mockRepo.NewMockChat(ctrl)
-
 			// Передаём структуру чата
 			tt.mock(mockChat, tt.dataDB)
-
-			// Создаём объект базы данных в который передадим наш мок чата
-			repository := &db.DB{Chat: mockChat}
-
-			// Создаём экземпляр сервиса чат
-			serviceChat := NewChatService(repository)
 
 			// Проверяем ожидаемый и актуальный результат
 			acChats, acErr := serviceChat.GetChat(tt.inChat)
@@ -291,6 +291,20 @@ func TestChatService_GetChat(t *testing.T) {
 func TestChatService_DeleteChat(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehaviour func(s *mockRepo.MockChat, dataDB entity.ChatDelete)
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	// Завершаем работу контролера после выполнения каждого теста
+	defer ctrl.Finish()
+
+	// Создаём моки базы данных чата
+	mockChat := mockRepo.NewMockChat(ctrl)
+
+	// Создаём объект базы данных в который передадим наш мок чата
+	repository := &db.DB{Chat: mockChat}
+
+	// Создаём экземпляр сервиса чат
+	serviceChat := NewChatService(repository)
 
 	tests := []struct {
 		name    string
@@ -414,22 +428,8 @@ func TestChatService_DeleteChat(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			// Завершаем работу контролера после выполнения каждого теста
-			defer ctrl.Finish()
-
-			// Создаём моки базы данных чата
-			mockChat := mockRepo.NewMockChat(ctrl)
-
 			// Передаём структуру чата
 			tt.mock(mockChat, tt.dataDB)
-
-			// Создаём объект базы данных в который передадим наш мок чата
-			repository := &db.DB{Chat: mockChat}
-
-			// Создаём экземпляр сервиса чат
-			serviceChat := NewChatService(repository)
 
 			// Проверяем ожидаемый и актуальный результат
 			acChats, acErr := serviceChat.DeleteChat(tt.inChat, tt.dataDB.UserID)

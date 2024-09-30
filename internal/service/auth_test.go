@@ -22,6 +22,22 @@ func TestAuthService_CreateUser(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehaviour func(s *mockRepo.MockAuthorization, dataDB entity.User)
 
+	// Инициализируем зависимости
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	// Завершаем работу контролера после выполнения каждого теста
+	defer ctrl.Finish()
+
+	// Создаём моки базы данных авторизации
+	mockAuth := mockRepo.NewMockAuthorization(ctrl)
+
+	// Создаём объект базы данных в который передадим наш мок авторизации
+	repository := &db.DB{Authorization: mockAuth}
+
+	// Создаём экземпляр сервиса авторизации
+	serviceAuth := NewAuthService(repository)
+
 	tests := []struct {
 		name    string
 		user    dto.SignUpRequest
@@ -95,24 +111,8 @@ func TestAuthService_CreateUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Инициализируем зависимости
-
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			// Завершаем работу контролера после выполнения каждого теста
-			defer ctrl.Finish()
-
-			// Создаём моки базы данных авторизации
-			mockAuth := mockRepo.NewMockAuthorization(ctrl)
-
 			// Передаём структуру пользователя
 			tt.mock(mockAuth, tt.dataDB)
-
-			// Создаём объект базы данных в который передадим наш мок авторизации
-			repository := &db.DB{Authorization: mockAuth}
-
-			// Создаём экземпляр сервиса авторизации
-			serviceAuth := NewAuthService(repository)
 
 			// Проверяем ожидаемый и актуальный результат
 			if tt.encrypt {
@@ -131,6 +131,20 @@ func TestAuthService_CreateUser(t *testing.T) {
 
 func TestAuthService_GenerateToken(t *testing.T) {
 	type mockBehaviour func(s *mockRepo.MockAuthorization, dataDB entity.User)
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	// Завершаем работу контролера после выполнения каждого теста
+	defer ctrl.Finish()
+
+	// Создаём моки базы данных авторизации
+	mockAuth := mockRepo.NewMockAuthorization(ctrl)
+
+	// Создаём объект базы данных в который передадим наш мок авторизации
+	repository := &db.DB{Authorization: mockAuth}
+
+	// Создаём экземпляр сервиса авторизации
+	serviceAuth := NewAuthService(repository)
 
 	tests := []struct {
 		name    string
@@ -227,22 +241,8 @@ func TestAuthService_GenerateToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			// Завершаем работу контролера после выполнения каждого теста
-			defer ctrl.Finish()
-
-			// Создаём моки базы данных авторизации
-			mockAuth := mockRepo.NewMockAuthorization(ctrl)
-
 			// Передаём структуру пользователя
 			tt.mock(mockAuth, tt.dataDB)
-
-			// Создаём объект базы данных в который передадим наш мок авторизации
-			repository := &db.DB{Authorization: mockAuth}
-
-			// Создаём экземпляр сервиса авторизации
-			serviceAuth := NewAuthService(repository)
 
 			// Проверяем ожидаемый и актуальный результат
 			if tt.decrypt {
@@ -283,6 +283,20 @@ func TestAuthService_ParseToken(t *testing.T) {
 	tokenRSA, errRSA := createTokenRSA()
 	assert.NoError(t, errRSA)
 
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	// Завершаем работу контролера после выполнения каждого теста
+	defer ctrl.Finish()
+
+	// Создаём моки базы данных авторизации
+	mockAuth := mockRepo.NewMockAuthorization(ctrl)
+
+	// Создаём объект базы данных в который передадим наш мок авторизации
+	repository := &db.DB{Authorization: mockAuth}
+
+	// Создаём экземпляр сервиса авторизации
+	serviceAuth := NewAuthService(repository)
+
 	tests := []struct {
 		name    string
 		token   string
@@ -311,20 +325,6 @@ func TestAuthService_ParseToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			// Завершаем работу контролера после выполнения каждого теста
-			defer ctrl.Finish()
-
-			// Создаём моки базы данных авторизации
-			mockAuth := mockRepo.NewMockAuthorization(ctrl)
-
-			// Создаём объект базы данных в который передадим наш мок авторизации
-			repository := &db.DB{Authorization: mockAuth}
-
-			// Создаём экземпляр сервиса авторизации
-			serviceAuth := NewAuthService(repository)
-
 			// Проверяем ожидаемый и актуальный результат
 			acID, acErr := serviceAuth.ParseToken(tt.token)
 			assert.Equal(t, tt.wantID, acID)

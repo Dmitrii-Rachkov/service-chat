@@ -17,6 +17,20 @@ func TestMessageService_AddMessage(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehaviour func(s *mockRepo.MockMessage, dataDB entity.MessageAdd)
 
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	// Завершаем работу контролера после выполнения каждого теста
+	defer ctrl.Finish()
+
+	// Создаём моки базы данных сообщений
+	mockMessage := mockRepo.NewMockMessage(ctrl)
+
+	// Создаём объект базы данных в который передадим наш мок сообщений
+	repository := &db.DB{Message: mockMessage}
+
+	// Создаём экземпляр сервиса сообщений
+	serviceChat := NewMessageService(repository)
+
 	tests := []struct {
 		name      string
 		inMessage dto.MessageAdd
@@ -98,22 +112,8 @@ func TestMessageService_AddMessage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			// Завершаем работу контролера после выполнения каждого теста
-			defer ctrl.Finish()
-
-			// Создаём моки базы данных сообщений
-			mockMessage := mockRepo.NewMockMessage(ctrl)
-
 			// Передаём структуру сообщения
 			tt.mock(mockMessage, tt.dataDB)
-
-			// Создаём объект базы данных в который передадим наш мок сообщений
-			repository := &db.DB{Message: mockMessage}
-
-			// Создаём экземпляр сервиса сообщений
-			serviceChat := NewMessageService(repository)
 
 			// Проверяем ожидаемый и актуальный результат
 			acMsg, acErr := serviceChat.AddMessage(tt.inMessage)
@@ -126,6 +126,20 @@ func TestMessageService_AddMessage(t *testing.T) {
 func TestMessageService_UpdateMessage(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehaviour func(s *mockRepo.MockMessage, dataDB entity.MessageUpdate)
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	// Завершаем работу контролера после выполнения каждого теста
+	defer ctrl.Finish()
+
+	// Создаём моки базы данных сообщений
+	mockMessage := mockRepo.NewMockMessage(ctrl)
+
+	// Создаём объект базы данных в который передадим наш мок сообщений
+	repository := &db.DB{Message: mockMessage}
+
+	// Создаём экземпляр сервиса сообщений
+	serviceChat := NewMessageService(repository)
 
 	tests := []struct {
 		name      string
@@ -208,22 +222,8 @@ func TestMessageService_UpdateMessage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			// Завершаем работу контролера после выполнения каждого теста
-			defer ctrl.Finish()
-
-			// Создаём моки базы данных сообщений
-			mockMessage := mockRepo.NewMockMessage(ctrl)
-
 			// Передаём структуру сообщения
 			tt.mock(mockMessage, tt.dataDB)
-
-			// Создаём объект базы данных в который передадим наш мок сообщений
-			repository := &db.DB{Message: mockMessage}
-
-			// Создаём экземпляр сервиса сообщений
-			serviceChat := NewMessageService(repository)
 
 			// Проверяем ожидаемый и актуальный результат
 			acMsg, acErr := serviceChat.UpdateMessage(tt.inMessage)
@@ -238,6 +238,20 @@ func TestMessageService_GetMessage(t *testing.T) {
 	type mockBehaviour func(s *mockRepo.MockMessage, dataDB entity.MessageGet)
 	limit := int64(10)
 	offset := int64(0)
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	// Завершаем работу контролера после выполнения каждого теста
+	defer ctrl.Finish()
+
+	// Создаём моки базы данных сообщений
+	mockMessage := mockRepo.NewMockMessage(ctrl)
+
+	// Создаём объект базы данных в который передадим наш мок сообщений
+	repository := &db.DB{Message: mockMessage}
+
+	// Создаём экземпляр сервиса сообщений
+	serviceChat := NewMessageService(repository)
 
 	tests := []struct {
 		name      string
@@ -393,22 +407,8 @@ func TestMessageService_GetMessage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			// Завершаем работу контролера после выполнения каждого теста
-			defer ctrl.Finish()
-
-			// Создаём моки базы данных сообщений
-			mockMessage := mockRepo.NewMockMessage(ctrl)
-
 			// Передаём структуру сообщения
 			tt.mock(mockMessage, tt.dataDB)
-
-			// Создаём объект базы данных в который передадим наш мок сообщений
-			repository := &db.DB{Message: mockMessage}
-
-			// Создаём экземпляр сервиса сообщений
-			serviceChat := NewMessageService(repository)
 
 			// Проверяем ожидаемый и актуальный результат
 			acMsg, acErr := serviceChat.GetMessage(tt.inMessage, tt.dataDB.UserID)
@@ -421,6 +421,20 @@ func TestMessageService_GetMessage(t *testing.T) {
 func TestMessageService_DeleteMessage(t *testing.T) {
 	// Структура для последующей реализации поведения мока
 	type mockBehaviour func(s *mockRepo.MockMessage, dataDB entity.MessageDel)
+
+	//Инициализируем контролер для мока сервиса
+	ctrl := gomock.NewController(t)
+	// Завершаем работу контролера после выполнения каждого теста
+	defer ctrl.Finish()
+
+	// Создаём моки базы данных сообщений
+	mockMessage := mockRepo.NewMockMessage(ctrl)
+
+	// Создаём объект базы данных в который передадим наш мок сообщений
+	repository := &db.DB{Message: mockMessage}
+
+	// Создаём экземпляр сервиса сообщений
+	serviceChat := NewMessageService(repository)
 
 	tests := []struct {
 		name      string
@@ -536,22 +550,8 @@ func TestMessageService_DeleteMessage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			//Инициализируем контролер для мока сервиса
-			ctrl := gomock.NewController(t)
-			// Завершаем работу контролера после выполнения каждого теста
-			defer ctrl.Finish()
-
-			// Создаём моки базы данных сообщений
-			mockMessage := mockRepo.NewMockMessage(ctrl)
-
 			// Передаём структуру сообщения
 			tt.mock(mockMessage, tt.dataDB)
-
-			// Создаём объект базы данных в который передадим наш мок сообщений
-			repository := &db.DB{Message: mockMessage}
-
-			// Создаём экземпляр сервиса сообщений
-			serviceChat := NewMessageService(repository)
 
 			// Проверяем ожидаемый и актуальный результат
 			acMsg, acErr := serviceChat.DeleteMessage(tt.inMessage, tt.dataDB.UserID)
