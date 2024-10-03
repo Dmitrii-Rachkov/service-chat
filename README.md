@@ -1,7 +1,12 @@
 # service-chat
 
 # Запуск сервиса
-### 1. Поднимаем контейнеры с сервисом и базой данных
+### 1. Скачать проект из GitHub
+```
+git clone https://github.com/Dmitrii-Rachkov/service-chat.git  
+```
+### 2. Установить Docker Desktop
+### 3. Поднять контейнеры с сервисом и базой данных
 ```bash
 make up-service
 ```
