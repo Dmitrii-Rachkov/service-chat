@@ -6,7 +6,9 @@
 git clone https://github.com/Dmitrii-Rachkov/service-chat.git  
 ```
 ### 2. Установить Docker Desktop
-### 3. Поднять контейнеры с сервисом и базой данных
+### 3. Установить Go 1.21.7
+### 4. Установить IDE GoLand
+### 5. Поднять контейнеры с сервисом и базой данных
 ```bash
 make up-service
 ```
