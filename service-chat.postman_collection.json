@@ -516,7 +516,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"chat_id\": 1,\n    \"limit\": 0,\n    \"offset\": 0\n}",
+					"raw": "{\n    \"chat_id\": 1,\n    \"user_id\": 1,\n    \"text\": \"example\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -524,7 +524,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:9000/messages/get",
+					"raw": "http://localhost:9000/messages/add",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -532,7 +532,7 @@
 					"port": "9000",
 					"path": [
 						"messages",
-						"get"
+						"add"
 					]
 				}
 			},
