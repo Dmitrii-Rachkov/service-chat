@@ -27,34 +27,55 @@ func NewMessagePostgres(db *sql.DB) *MessagePostgres {
 
 // AddMessage - сохраняем сообщение в чат от пользователя в бд и возвращаем message id
 func (m *MessagePostgres) AddMessage(in entity.MessageAdd) (int, error) {
+	// Проверяем, что чат существует и не удалён
+	// Скелет sql запроса
+	stmtChat, errChat := m.db.Prepare(`SELECT id FROM "chat" WHERE id = $1 AND is_deleted = false`)
+	if errChat != nil {
+		return 0, fmt.Errorf("error path: %s, error: %w", opMessageAdd, pureErr(errChat))
+	}
+	defer func() { _ = stmtChat.Close() }()
+
+	// Запрос в базу на проверку существует ли чат и он не удален
+	row := stmtChat.QueryRow(in.ChatID)
+
+	var chatID int
+	if err := row.Scan(&chatID); err != nil && errors.Is(err, sql.ErrNoRows) {
+		return 0, fmt.Errorf("error path: %s, error: %s", opMessageAdd, errChatExist)
+	} else if err != nil {
+		return 0, fmt.Errorf("error path: %s, error: %w", opMessageAdd, pureErr(err))
+	}
+
 	var messageID int
 	var cmID int
 
 	// Начинаем транзакцию
 	tx, err := m.db.Begin()
 	if err != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, err)
+		return 0, fmt.Errorf("error path: %s, error: %s", opMessageAdd, pureErr(err))
 	}
 
 	// Скелет sql запроса на сохранение сообщения в бд
 	stmtAdd, errAdd := tx.Prepare(`INSERT INTO "message" (text, user_id) VALUES ($1, $2) RETURNING id`)
 	if errAdd != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", opMessageAdd, errAdd)
+		return 0, fmt.Errorf("error path: %s, error: %w", opMessageAdd, pureErr(errAdd))
 	}
-	defer stmtAdd.Close()
+	defer func() { _ = stmtAdd.Close() }()
 
 	// Сохраняем сообщение от пользователя в бд
 	if rowAdd := tx.Stmt(stmtAdd).QueryRow(in.Text, in.UserID).Scan(&messageID); rowAdd != nil {
 		// Откатываем транзакцию в случае ошибки
 		errTx := tx.Rollback()
 		if errTx != nil {
-			return 0, fmt.Errorf("error path: %s, error: %s", opCreateChat, errTx)
+			return 0, fmt.Errorf("error path: %s, error: %w", opMessageAdd, pureErr(errTx))
 		}
-		return 0, fmt.Errorf("error path: %s, error: %w", opMessageAdd, rowAdd)
+		return 0, fmt.Errorf("error path: %s, error: %w", opMessageAdd, pureErr(rowAdd))
 	}
 
 	// Скелет sql на связь users_chat_id и message_id в таблице chats_messages
-	stmtCm, errCm := tx.Prepare(`WITH uci AS (
+	stmtCm, errCm := tx.Prepare(`WITH validate_chat AS (
+    										SELECT id FROM "chat" 
+    										WHERE id = $2 AND is_deleted = false
+										), uci AS (
 											SELECT id FROM "users_chat" 
 											WHERE user_id = $1 AND chat_id = $2
 										)
@@ -62,26 +83,26 @@ func (m *MessagePostgres) AddMessage(in entity.MessageAdd) (int, error) {
 										SELECT id, $3 FROM uci 
 										RETURNING id`)
 	if errCm != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, errCm)
+		return 0, fmt.Errorf("error path: %s, error: %w", opMessageAdd, pureErr(errCm))
 	}
-	defer stmtCm.Close()
+	defer func() { _ = stmtCm.Close() }()
 
 	// Создаём связь users_chat_id и message_id в таблице chats_messages
 	if rowCm := tx.Stmt(stmtCm).QueryRow(in.UserID, in.ChatID, messageID).Scan(&cmID); rowCm != nil && rowCm.Error() == errNoRows {
 		errTx := tx.Rollback()
 		if errTx != nil {
-			return 0, fmt.Errorf("error path: %s, error: %s", opCreateChat, errTx)
+			return 0, fmt.Errorf("error path: %s, error: %w", opMessageAdd, pureErr(errTx))
 		}
 		return 0, fmt.Errorf("error path: %s, error: %s", opMessageAdd, "Invalid chat_id")
 	} else if rowCm != nil {
 		errTx := tx.Rollback()
 		if errTx != nil {
-			return 0, fmt.Errorf("error path: %s, error: %s", opCreateChat, errTx)
+			return 0, fmt.Errorf("error path: %s, error: %w", opMessageAdd, pureErr(errTx))
 		}
-		return 0, fmt.Errorf("error path: %s, error: %w", opMessageAdd, rowCm)
+		return 0, fmt.Errorf("error path: %s, error: %w", opMessageAdd, pureErr(rowCm))
 	}
 
-	return messageID, tx.Commit()
+	return messageID, pureErr(tx.Commit())
 }
 
 // UpdateMessage - редактируем сообщение от пользователя в бд и возвращаем message id
@@ -91,15 +112,15 @@ func (m *MessagePostgres) UpdateMessage(in entity.MessageUpdate) (int, error) {
 	// Скелет sql запроса на редактирование сообщения в бд
 	stmt, err := m.db.Prepare(`UPDATE "message" SET text = $1 WHERE id = $2 AND user_id = $3 RETURNING id`)
 	if err != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", opMessageUpdate, err)
+		return 0, fmt.Errorf("error path: %s, error: %w", opMessageUpdate, pureErr(err))
 	}
-	defer stmt.Close()
+	defer func() { _ = stmt.Close() }()
 
 	// Редактируем сообщение от пользователя в бд
 	if row := stmt.QueryRow(in.NewText, in.MessageID, in.UserID).Scan(&messageID); row != nil && row.Error() == errNoRows {
 		return 0, fmt.Errorf("error path: %s, error: %s", opMessageUpdate, "Invalid message_id OR user_id")
 	} else if row != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", opMessageUpdate, row)
+		return 0, fmt.Errorf("error path: %s, error: %w", opMessageUpdate, pureErr(row))
 	}
 
 	return messageID, nil
@@ -114,16 +135,16 @@ func (m *MessagePostgres) GetMessage(in entity.MessageGet) ([]entity.Message, er
 	// Скелет sql запроса на получение users_chat_id и user_id из конкретного чата
 	stmtUsersChat, err := m.db.Prepare(`SELECT id, user_id FROM "users_chat" WHERE chat_id = $1`)
 	if err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, pureErr(err))
 	}
-	defer stmtUsersChat.Close()
+	defer func() { _ = stmtUsersChat.Close() }()
 
 	// Получаем users_chat_id и user_id из бд
 	rowsUc, err := stmtUsersChat.Query(in.ChatID)
 	if err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, pureErr(err))
 	}
-	defer rowsUc.Close()
+	defer func() { _ = rowsUc.Close() }()
 
 	// Кладём строки из бд в структуру
 	type usersChat struct {
@@ -134,7 +155,7 @@ func (m *MessagePostgres) GetMessage(in entity.MessageGet) ([]entity.Message, er
 	for rowsUc.Next() {
 		var usersChatID, userID int
 		if errSc := rowsUc.Scan(&usersChatID, &userID); errSc != nil {
-			return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, errSc)
+			return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, pureErr(errSc))
 		}
 		uc.usersChatID = append(uc.usersChatID, usersChatID)
 		uc.userID = append(uc.userID, userID)
@@ -142,7 +163,7 @@ func (m *MessagePostgres) GetMessage(in entity.MessageGet) ([]entity.Message, er
 
 	// В конце проверяем строки на ошибки (best practice)
 	if err = rowsUc.Err(); err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, pureErr(err))
 	}
 
 	// Проверяем, что пользователь, который запрашивает сообщения, есть в чате
@@ -171,33 +192,34 @@ func (m *MessagePostgres) GetMessage(in entity.MessageGet) ([]entity.Message, er
 										SELECT *
 										FROM message
 										WHERE id IN (SELECT message_id FROM cm)
+										AND is_deleted = false
 										ORDER BY created_at
 										LIMIT $2 OFFSET $3`)
 	if err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, pureErr(err))
 	}
-	defer stmtMsg.Close()
+	defer func() { _ = stmtMsg.Close() }()
 
 	// Получаем сообщения из бд
 	rowsMsg, err := stmtMsg.Query(pq.Array(uc.usersChatID), in.Limit, in.Offset)
 	if err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, pureErr(err))
 	}
-	defer rowsMsg.Close()
+	defer func() { _ = rowsMsg.Close() }()
 
 	// Структура для записи всех полученных сообщений из бд
 	var messages []entity.Message
 	for rowsMsg.Next() {
 		var msg entity.Message
 		if errSc := rowsMsg.Scan(&msg.Id, &msg.Text, &msg.UserID, &msg.CreatedAt, &msg.IsDeleted); errSc != nil {
-			return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, errSc)
+			return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, pureErr(errSc))
 		}
 		messages = append(messages, msg)
 	}
 
 	// В конце проверяем строки на ошибки (best practice)
 	if err = rowsMsg.Err(); err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opMessageGet, pureErr(err))
 	}
 
 	return messages, nil
@@ -208,30 +230,30 @@ func (m *MessagePostgres) DeleteMessage(in entity.MessageDel) ([]entity.DelMsg, 
 	// Скелет sql запроса на удаление сообщений
 	stmtDelMsg, err := m.db.Prepare(`SELECT * FROM delete_message($1, VARIADIC $2::integer[])`)
 	if err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opDelMsg, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opDelMsg, pureErr(err))
 	}
-	defer stmtDelMsg.Close()
+	defer func() { _ = stmtDelMsg.Close() }()
 
 	// Получаем информацию по результатам soft удаления сообщений из бд
 	rowsDel, err := stmtDelMsg.Query(in.UserID, pq.Array(in.MsgIds))
 	if err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opDelMsg, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opDelMsg, pureErr(err))
 	}
-	defer rowsDel.Close()
+	defer func() { _ = rowsDel.Close() }()
 
 	// Структура для записи результата soft удаления сообщений из бд
 	var delMsg []entity.DelMsg
 	for rowsDel.Next() {
 		var dm entity.DelMsg
 		if errDel := rowsDel.Scan(&dm.MessageID, &dm.Result); errDel != nil {
-			return nil, fmt.Errorf("error path: %s, error: %w", opDelMsg, errDel)
+			return nil, fmt.Errorf("error path: %s, error: %w", opDelMsg, pureErr(errDel))
 		}
 		delMsg = append(delMsg, dm)
 	}
 
 	// В конце проверяем строки на ошибки (best practice)
 	if err = rowsDel.Err(); err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opDelMsg, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opDelMsg, pureErr(err))
 	}
 
 	return delMsg, nil

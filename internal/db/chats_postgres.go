@@ -31,16 +31,16 @@ func (c *ChatsPostgres) CreateChat(in entity.ChatAdd) (int, error) {
 	// Запускаем транзакцию
 	tx, err := c.db.Begin()
 	if err != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, err)
+		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, pureErr(err))
 
 	}
 
 	// Скелет sql запроса в базу данных для создания чата в таблице chat
 	stmtChat, errChat := c.db.Prepare(`INSERT INTO "chat" (name) VALUES ($1) RETURNING id`)
 	if errChat != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, errChat)
+		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, pureErr(errChat))
 	}
-	defer stmtChat.Close()
+	defer func() { _ = stmtChat.Close() }()
 
 	// Запрос на создание чата между пользователями
 	rowChat := tx.Stmt(stmtChat).QueryRow(in.ChatName)
@@ -57,17 +57,17 @@ func (c *ChatsPostgres) CreateChat(in entity.ChatAdd) (int, error) {
 		// Откатываем транзакцию в случае ошибки
 		errTx := tx.Rollback()
 		if errTx != nil {
-			return 0, fmt.Errorf("error path: %s, error: %s", opCreateChat, errTx)
+			return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, pureErr(errTx))
 		}
-		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, err)
+		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, pureErr(err))
 	}
 
 	// Скелет sql запроса в базу данных для связи чата и пользователей в таблице users_chat
 	stmtUsersChat, errUsersChat := tx.Prepare(pq.CopyIn("users_chat", "user_id", "chat_id"))
 	if errUsersChat != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, errUsersChat)
+		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, pureErr(errUsersChat))
 	}
-	defer stmtUsersChat.Close()
+	defer func() { _ = stmtUsersChat.Close() }()
 
 	// Запрос на связь чата с пользователями
 	for _, user := range in.Users {
@@ -76,21 +76,21 @@ func (c *ChatsPostgres) CreateChat(in entity.ChatAdd) (int, error) {
 			// Откатываем транзакцию в случае ошибки
 			errTx := tx.Rollback()
 			if errTx != nil {
-				return 0, fmt.Errorf("error path: %s, error: %s", opCreateChat, errTx)
+				return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, pureErr(errTx))
 			}
 			// Возвращаем ошибку
-			return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, err)
+			return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, pureErr(err))
 		}
 	}
 
 	// Очищаем все буферизованные данные
 	_, err = stmtUsersChat.Exec()
 	if err != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, err)
+		return 0, fmt.Errorf("error path: %s, error: %w", opCreateChat, pureErr(err))
 	}
 
 	// Возвращаем id chat и завершаем транзакцию
-	return chatID, tx.Commit()
+	return chatID, pureErr(tx.Commit())
 }
 
 // GetChat - получаем все чаты пользователя из бд
@@ -117,30 +117,30 @@ func (c *ChatsPostgres) GetChat(in entity.ChatGet) ([]entity.Chat, error) {
 											FROM sort_chat`)
 
 	if err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opGetChat, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opGetChat, pureErr(err))
 	}
-	defer stmtChats.Close()
+	defer func() { _ = stmtChats.Close() }()
 
 	// Получаем чаты из бд
 	rowsChats, err := stmtChats.Query(in.UserID)
 	if err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opGetChat, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opGetChat, pureErr(err))
 	}
-	defer rowsChats.Close()
+	defer func() { _ = rowsChats.Close() }()
 
 	// Структура для записи всех полученных чатов из бд
 	var chats []entity.Chat
 	for rowsChats.Next() {
 		var chat entity.Chat
 		if errChat := rowsChats.Scan(&chat.Id, &chat.Name, &chat.CreatedAt, &chat.IsDeleted); errChat != nil {
-			return nil, fmt.Errorf("error path: %s, error: %w", opGetChat, errChat)
+			return nil, fmt.Errorf("error path: %s, error: %w", opGetChat, pureErr(errChat))
 		}
 		chats = append(chats, chat)
 	}
 
 	// В конце проверяем строки на ошибки (best practice)
 	if err = rowsChats.Err(); err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opGetChat, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opGetChat, pureErr(err))
 	}
 
 	return chats, nil
@@ -151,30 +151,30 @@ func (c *ChatsPostgres) DeleteChat(in entity.ChatDelete) ([]entity.DeletedChats,
 	// Скелет sql запроса на soft удаление чатов из бд для конкретного пользователя
 	stmtDeleteChat, err := c.db.Prepare(`SELECT * FROM delete_chat($1, VARIADIC $2::integer[])`)
 	if err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opDeleteChat, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opDeleteChat, pureErr(err))
 	}
-	defer stmtDeleteChat.Close()
+	defer func() { _ = stmtDeleteChat.Close() }()
 
 	// Получаем информацию по результатам soft удаления чатов из бд
 	rowsDeleted, err := stmtDeleteChat.Query(in.UserID, pq.Array(in.ChatIds))
 	if err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opDeleteChat, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opDeleteChat, pureErr(err))
 	}
-	defer rowsDeleted.Close()
+	defer func() { _ = rowsDeleted.Close() }()
 
 	// Структура для записи результата soft удаления чатов из бд
 	var deletedChats []entity.DeletedChats
 	for rowsDeleted.Next() {
 		var dc entity.DeletedChats
 		if errDel := rowsDeleted.Scan(&dc.ChatID, &dc.Result); errDel != nil {
-			return nil, fmt.Errorf("error path: %s, error: %w", opDeleteChat, errDel)
+			return nil, fmt.Errorf("error path: %s, error: %w", opDeleteChat, pureErr(errDel))
 		}
 		deletedChats = append(deletedChats, dc)
 	}
 
 	// В конце проверяем строки на ошибки (best practice)
 	if err = rowsDeleted.Err(); err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", opDeleteChat, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", opDeleteChat, pureErr(err))
 	}
 
 	return deletedChats, nil

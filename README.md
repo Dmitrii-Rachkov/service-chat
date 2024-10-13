@@ -6,12 +6,17 @@
 git clone https://github.com/Dmitrii-Rachkov/service-chat.git  
 ```
 ### 2. Установить Docker Desktop
+#### 2.1 Если не получается установить Docker Desktop, то можно использовать CLI docker-compose.
+#### 2.2 Если у вас compose V1, то в файле compose.yaml необходимо изменить версию с 3.8 на 2.2
+#### 2.3 Также если у вас compose V1 скорее всего нужно переименовать файл compose.yaml в docker-compose.yaml
 ### 3. Установить Go 1.21.7
 ### 4. Установить IDE GoLand
 ### 5. Поднять контейнеры с сервисом и базой данных
 ```bash
 make up-service
 ```
+### 6. В корне проекта есть готовая коллекция запросов для тестирования в Postman. Можете загрузить эту коллекцию в Postman и провести тестирование.
+### 7. В настройках Edit Configuration нужно добавить флаг Build - Always для пересборки контейнеров при каждом разворачивании сервиса
 
 # Debug режим
 
@@ -29,6 +34,8 @@ http://localhost:9000/swagger/index.html/
 ### 2. Генерация схемы - swag init -g cmd/service/main.go
 ### 3.1 Визуализация проекта - go-callvis -group pkg ./cmd/service | dot -Tpng -o filename.png
 ### 3.2 В браузере по адресу http://localhost:7878/ откроется визуализированная схема проекта
+### 4. API /sign-up и /sign-in работают без token. Для всех остальных API необходимо использовать в запросе Bearer token, полученный в ответе /sign-in
+### 5. Время жизни token 5 минут, вы можете это изменить в const tokenTTL файла internal/service/auth.go
 
 # Структура проекта
 ## 1. cmd - точка входа в программу, здесь лежит файл main
