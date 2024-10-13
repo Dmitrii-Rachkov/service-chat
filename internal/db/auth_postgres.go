@@ -32,7 +32,7 @@ func (r *AuthPostgres) CreateUser(user entity.User) (int, error) {
 	// Скелет sql запроса в базу данных
 	stmt, err := r.db.Prepare(`INSERT INTO "user" (username, password_hash) VALUES ($1, $2) RETURNING id`)
 	if err != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", op, err)
+		return 0, fmt.Errorf("error path: %s, error: %w", op, pureErr(err))
 	}
 
 	// Запрос в базу на создание пользователя
@@ -47,7 +47,7 @@ func (r *AuthPostgres) CreateUser(user entity.User) (int, error) {
 
 	// Получаем id записи
 	if err = row.Scan(&id); err != nil {
-		return 0, fmt.Errorf("error path: %s, error: %w", op, err)
+		return 0, fmt.Errorf("error path: %s, error: %w", op, pureErr(err))
 	}
 
 	return id, nil
@@ -65,7 +65,7 @@ func (r *AuthPostgres) GetUser(user entity.User) (*entity.User, error) {
 	// Скелет sql запроса в базу данных
 	stmt, err := r.db.Prepare(`SELECT id, username, password_hash FROM "user" WHERE username = $1`)
 	if err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", op, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", op, pureErr(err))
 	}
 
 	// Запрос в базу на получение пользователя
@@ -73,7 +73,7 @@ func (r *AuthPostgres) GetUser(user entity.User) (*entity.User, error) {
 
 	// Получаем id, username, password_hash из базы данных
 	if err = row.Scan(&userDB.Id, &userDB.Username, &userDB.Password); err != nil {
-		return nil, fmt.Errorf("error path: %s, error: %w", op, err)
+		return nil, fmt.Errorf("error path: %s, error: %w", op, pureErr(err))
 	}
 
 	return &userDB, nil
